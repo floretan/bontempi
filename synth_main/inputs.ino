@@ -20,6 +20,11 @@ void setupInputs() {
   for (byte i = 0; i < sizeof(keyInputPins); i++) {
     pinMode(keyInputPins[i], INPUT_PULLUP);
   }
+
+  // Initialize key state.
+  for (byte i = 0; i < sizeof(keyState); i++) {
+    keyState[i] = false;
+  }
 }
 
 void readInputs() {
@@ -31,24 +36,26 @@ void readInputs() {
   if (value != p0) {
     p0 = value;
 
-    switch(p0 * 4 / 1023 ) {
+    switch (p0 * 4 / 1023 ) {
       case 0:
-        waveform1 = WAVEFORM_SINE;
+        synth.setWaveForm1(WAVEFORM_SINE);
         break;
-    
+
       case 1:
-        waveform1 = WAVEFORM_SQUARE;
+        synth.setWaveForm1(WAVEFORM_TRIANGLE);
+
         break;
-        
+
       case 2:
-        waveform1 = WAVEFORM_SAWTOOTH;
+        synth.setWaveForm1(WAVEFORM_SAWTOOTH);
         break;
-      case 3: 
-        waveform1 = WAVEFORM_TRIANGLE;
+
+      case 3:
+        synth.setWaveForm1(WAVEFORM_SQUARE);
         break;
     }
   }
-  
+
   digitalWrite(multiplexDataPin, LOW);
   readInputKeyRow(67);
 
@@ -62,20 +69,21 @@ void readInputs() {
   if (value != p1) {
     p1 = value;
 
-    switch(p1 * 4 / 1023 ) {
+    switch (p1 * 4 / 1023 ) {
       case 0:
-        waveform2 = WAVEFORM_SINE;
+        synth.setWaveForm2(WAVEFORM_SINE);
         break;
-    
+
       case 1:
-        waveform2 = WAVEFORM_SQUARE;
+        synth.setWaveForm2(WAVEFORM_TRIANGLE);
         break;
-        
+
       case 2:
-        waveform2 = WAVEFORM_SAWTOOTH;
+        synth.setWaveForm2(WAVEFORM_SAWTOOTH);
         break;
-      case 3: 
-        waveform2 = WAVEFORM_TRIANGLE;
+
+      case 3:
+        synth.setWaveForm2(WAVEFORM_SQUARE);
         break;
     }
   }
@@ -102,11 +110,12 @@ void readInputs() {
   readInputKeyRow(81);
 
   value = analogRead(multiplexPotPin);
-  if (value != p2) {
+  if (value / 10 != p2 / 10) {
     p2 = value;
 
     // 1.0293022 = 24th root of 2 = quarter-step.
-    detune = fscale(1, 1023, 1, 1.0293022, p2, 0);
+    float detune = fscale(1, 1023, 1, 1.0293022, p2, 0);
+    synth.setDetune(detune);
   }
 
   // 6
@@ -124,16 +133,15 @@ void readInputs() {
   value = analogRead(multiplexPotPin);
   if (value != p7) {
     p7 = value;
-    volume = (float)p7 / 1023;
-    
-    synth.setMasterVolume(volume);
+
+    synth.setMasterVolume((float)p7 / 1023);
   }
 
   // 5
   digitalWrite(multiplexBPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-//  readInputKeyRow(0);
+  //  readInputKeyRow(0);
 
   // 4
   digitalWrite(multiplexAPin, LOW);
@@ -157,16 +165,16 @@ void readInputKey(byte baseNote, byte keyOffset) {
 
   if (pressed == LOW) {
     if (!keyState[note]) {
-      
+
       usbMIDI.sendNoteOn(note, velocity, channel);
-      doNoteOn(note);
+      synth.noteOn(note);
       keyState[note] = true;
     }
   }
   else {
     if (keyState[note]) {
       usbMIDI.sendNoteOff(note, velocity, channel);
-      doNoteOff(note);
+      synth.noteOff(note);
       keyState[note] = false;
     }
   }
