@@ -125,8 +125,8 @@ void readInputs() {
   if (value != p7) {
     p7 = value;
     volume = (float)p7 / 1023;
-    // TODO: move this to the state.
-    codec.volume(volume);
+    
+    synth.setMasterVolume(volume);
   }
 
   // 5

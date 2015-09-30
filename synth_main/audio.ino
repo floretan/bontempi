@@ -2,13 +2,13 @@
 
 void setupAudio() {
   // Audio setup.
-  AudioMemory(30);
-
-  codec.enable();
-  codec.volume(0.45);
-
-  codec.surroundSound(7, 1);
-  codec.surroundSoundEnable();
+//  AudioMemory(30);
+//
+//  codec.enable();
+//  codec.volume(0.45);
+//
+//  codec.surroundSound(7, 1);
+//  codec.surroundSoundEnable();
 
 
   // set envelope parameters, for pleasing sound :-)

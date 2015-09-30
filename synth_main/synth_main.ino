@@ -1,3 +1,4 @@
+#include "synth.h"
 
 // Inputs
 const byte multiplexAPin = 17;
@@ -18,6 +19,8 @@ const byte propagationDelay = 50;
 
 // Keep track of which keys are pressed.
 bool keyState[100];
+
+//Synth synth;
 
 byte waveform1;
 byte waveform2;
@@ -125,9 +128,17 @@ AudioConnection patchCord44(mixer2, 0, mixerRight, 1);
 AudioConnection patchCord51(mixerLeft, 0, audioOut, 0);
 AudioConnection patchCord52(mixerRight, 0, audioOut, 1);
 
-AudioControlSGTL5000 codec;
+Synth synth; 
 
 void setup() {
+
+  Serial.begin(115200);
+  // wait for Arduino Serial Monitor
+  delay(1000);
+
+  synth.setup();
+
+  
 
   setupInputs();
 
@@ -135,9 +146,7 @@ void setup() {
 
   setupAudio();
 
-  Serial.begin(115200);
-  // wait for Arduino Serial Monitor
-  delay(200);
+  
 
   // Midi setup.
   usbMIDI.setHandleNoteOff(OnNoteOff);
@@ -147,9 +156,9 @@ void setup() {
 unsigned long last_time = millis();
 void loop() {
 
-  // Change this to if(1) for measurement output every 5 seconds
+  // Change this to if(1) for measurement output every 2 seconds
   if (1) {
-    if (millis() - last_time >= 5000) {
+    if (millis() - last_time >= 2000) {
       Serial.print("Proc = ");
       Serial.print(AudioProcessorUsage());
       Serial.print(" (");
@@ -160,9 +169,6 @@ void loop() {
       Serial.print(AudioMemoryUsageMax());
       Serial.println(")");
       last_time = millis();
-
-      Serial.print("Detune:");
-      Serial.println(detune);
     }
   }
 
