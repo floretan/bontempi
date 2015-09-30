@@ -96,6 +96,24 @@ Synth::Synth() {
   this->waves2[6] = &sine16;
   this->waves2[7] = &sine17;
 
+  // avoid clipping.
+  noteMixer0.gain(0, 0.5);
+  noteMixer0.gain(1, 0.5);
+  noteMixer1.gain(0, 0.5);
+  noteMixer1.gain(1, 0.5);
+  noteMixer2.gain(0, 0.5);
+  noteMixer2.gain(1, 0.5);
+  noteMixer3.gain(0, 0.5);
+  noteMixer3.gain(1, 0.5);
+  noteMixer4.gain(0, 0.5);
+  noteMixer4.gain(1, 0.5);
+  noteMixer5.gain(0, 0.5);
+  noteMixer5.gain(1, 0.5);
+  noteMixer6.gain(0, 0.5);
+  noteMixer6.gain(1, 0.5);
+  noteMixer7.gain(0, 0.5);
+  noteMixer7.gain(1, 0.5);
+
   this->envs[0] = &env0;
   this->envs[1] = &env1;
   this->envs[2] = &env2;
@@ -104,6 +122,15 @@ Synth::Synth() {
   this->envs[5] = &env5;
   this->envs[6] = &env6;
   this->envs[7] = &env7;
+
+  mixer1.gain(0, 0.25);
+  mixer1.gain(1, 0.25);
+  mixer1.gain(2, 0.25);
+  mixer1.gain(3, 0.25);
+  mixer2.gain(0, 0.25);
+  mixer2.gain(1, 0.25);
+  mixer2.gain(2, 0.25);
+  mixer2.gain(3, 0.25);
 
   // set envelope parameters, for pleasing sound :-)
   for (int i = 0; i < 8; i++) {
@@ -133,6 +160,10 @@ void Synth::setup() {
 }
 
 void Synth::setMasterVolume(float vol) {
+  // Protect my ears.
+  if (vol > 0.8) {
+    vol = 0.8;
+  }
   this->masterVolume = vol;
   this->codec.volume(this->masterVolume);
 }

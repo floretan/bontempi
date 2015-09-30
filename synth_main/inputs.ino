@@ -134,7 +134,7 @@ void readInputs() {
   if (value != p7) {
     p7 = value;
 
-    synth.setMasterVolume((float)p7 / 1023);
+    synth.setMasterVolume((float)p7 / 1023 * 0.8);
   }
 
   // 5
