@@ -209,23 +209,24 @@ void Synth::noteOff(byte midiNote) {
 void Synth::setWaveForm1(byte waveform) {
   if (this->waveform1 != waveform) {
     this->waveform1 = waveform;
+
+    AudioNoInterrupts();
     for (int i = 0; i < 8; i++) {
-      AudioNoInterrupts();
       this->waves1[i]->begin(this->waveform1);
-      AudioInterrupts();
     }
+    AudioInterrupts();
   }
 }
 
 void Synth::setWaveForm2(byte waveform) {
   if (this->waveform2 != waveform) {
-
     this->waveform2 = waveform;
+
+    AudioNoInterrupts();
     for (int i = 0; i < 8; i++) {
-      AudioNoInterrupts();
       this->waves2[i]->begin(this->waveform2);
-      AudioInterrupts();
     }
+    AudioInterrupts();
   }
 }
 
