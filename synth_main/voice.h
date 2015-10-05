@@ -1,6 +1,8 @@
 #ifndef voice_H
 #define voice_H
 
+#define WAVEFORM_NOISE 13
+
 #include <Arduino.h>
 #include <Audio.h>
 #include <Wire.h>
@@ -11,12 +13,13 @@ class Voice {
     float detune;
     AudioSynthWaveform *osc1;
     AudioSynthWaveform *osc2;
+    AudioSynthNoiseWhite *noise;
 
     AudioMixer4 *noteMixer;
 
     AudioEffectEnvelope *env;
 
-    AudioConnection* patchCords[4];
+    AudioConnection* patchCords[5];
 
   public:
     Voice();

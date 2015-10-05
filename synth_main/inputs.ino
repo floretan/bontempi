@@ -69,20 +69,24 @@ void readInputs() {
   if (value != p1) {
     p1 = value;
 
-    switch (p1 * 4 / 1023 ) {
+    switch (p1 * 5 / 1023 ) {
       case 0:
+        synth.setWaveForm2(WAVEFORM_NOISE);
+        break;
+        
+      case 1:
         synth.setWaveForm2(WAVEFORM_SINE);
         break;
 
-      case 1:
+      case 2:
         synth.setWaveForm2(WAVEFORM_TRIANGLE);
         break;
 
-      case 2:
+      case 3:
         synth.setWaveForm2(WAVEFORM_SAWTOOTH);
         break;
 
-      case 3:
+      case 4:
         synth.setWaveForm2(WAVEFORM_SQUARE);
         break;
     }
