@@ -100,7 +100,8 @@ void readInputs() {
   value = analogRead(multiplexPotPin);
   if (value != p3) {
     p3 = value;
-    lfo_depth = (float)p3 / 1023;
+    float freq = fscale(1, 1023, 200, 8000, p3, -3);
+    synth.setFilterFrequency(freq);
   }
 
   // 2
@@ -148,6 +149,10 @@ void readInputs() {
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
   readInputKeyRow(39);
+
+  value = analogRead(multiplexPotPin);
+  float res = fscale(1, 1023, 0.0, 5.0, value, 0);
+  synth.setFilterResonance(res);
 }
 
 

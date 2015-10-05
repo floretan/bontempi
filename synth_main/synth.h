@@ -26,8 +26,9 @@ class Synth {
     byte notes[voiceCount];
     Voice *voices[voiceCount];
     AudioMixer4 *mergeMixers[voiceCount / 4];
-    AudioMixer4 *finalMixers[2];
-    AudioConnection* patchCords[voiceCount + mergeMixerCount + 2];
+    AudioMixer4 *finalMixer;
+    AudioFilterStateVariable *filter;
+    AudioConnection* patchCords[voiceCount + mergeMixerCount + 3];
 
   public:
     Synth();
@@ -41,6 +42,9 @@ class Synth {
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);
     void setDetune(float detune);
+
+    void setFilterFrequency(float freq);
+    void setFilterResonance(float q);
 };
 
 #endif

@@ -13,10 +13,12 @@ Synth::Synth() {
 
   int patchCordIndex = 0;
 
-  this->finalMixers[0] = new AudioMixer4();
-  this->finalMixers[1] = new AudioMixer4();
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixers[0], 0, audioOut, 0);
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixers[1], 0, audioOut, 1);
+  this->finalMixer = new AudioMixer4();
+  this->filter = new AudioFilterStateVariable();
+
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 1);
 
   for (int i = 0; i < mergeMixerCount; i++) {
     this->mergeMixers[i] = new AudioMixer4();
@@ -25,8 +27,7 @@ Synth::Synth() {
     this->mergeMixers[i]->gain(2, 0.25);
     this->mergeMixers[i]->gain(3, 0.25);
 
-    this->patchCords[patchCordIndex++] = new AudioConnection(*this->mergeMixers[i], 0, *this->finalMixers[0], i);
-    this->patchCords[patchCordIndex++] = new AudioConnection(*this->mergeMixers[i], 0, *this->finalMixers[1], i);
+    this->patchCords[patchCordIndex++] = new AudioConnection(*this->mergeMixers[i], 0, *this->finalMixer, i);
   }
 
   for (int i = 0; i < voiceCount; i++) {
@@ -119,3 +120,10 @@ void Synth::setDetune(float detune) {
   }
 }
 
+void Synth::setFilterFrequency(float freq) {
+  this->filter->frequency(freq);
+}
+
+void Synth::setFilterResonance(float q) {
+  this->filter->resonance(q);
+}
