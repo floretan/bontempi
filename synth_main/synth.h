@@ -8,6 +8,13 @@
 #include <SD.h>
 #include <SPI.h>
 
+#include "voice.h"
+
+// Mixers
+const byte mergeMixerCount = 2;
+const byte channelsPerMixer = 4;
+const byte voiceCount = channelsPerMixer * mergeMixerCount;
+
 class Synth {
     float masterVolume;
     byte waveform1;
@@ -16,13 +23,11 @@ class Synth {
 
     AudioControlSGTL5000 codec;
 
-    byte notes[8] = {
-      0, 0, 0, 0,
-      0, 0, 0, 0
-    };
-    AudioSynthWaveform *waves1[8];
-    AudioSynthWaveform *waves2[8];
-    AudioEffectEnvelope *envs[8];
+    byte notes[voiceCount];
+    Voice *voices[voiceCount];
+    AudioMixer4 *mergeMixers[voiceCount / 4];
+    AudioMixer4 *finalMixers[2];
+    AudioConnection* patchCords[voiceCount + mergeMixerCount + 2];
 
   public:
     Synth();
