@@ -28,7 +28,8 @@ class Synth {
     AudioMixer4 *mergeMixers[voiceCount / 4];
     AudioMixer4 *finalMixer;
     AudioFilterStateVariable *filter;
-    AudioConnection* patchCords[voiceCount + mergeMixerCount + 3];
+    AudioSynthWaveformSine *lfo;
+    AudioConnection* patchCords[voiceCount + mergeMixerCount + 4];
 
   public:
     Synth();
@@ -45,6 +46,9 @@ class Synth {
 
     void setFilterFrequency(float freq);
     void setFilterResonance(float q);
+
+    void setLFORate(float freq);
+    void setFilterLFOAmount(float octaves);
 };
 
 #endif

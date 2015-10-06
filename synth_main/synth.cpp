@@ -16,9 +16,14 @@ Synth::Synth() {
   this->finalMixer = new AudioMixer4();
   this->filter = new AudioFilterStateVariable();
 
+  
+
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 1);
+
+  this->lfo = new AudioSynthWaveformSine();
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filter, 1);
 
   for (int i = 0; i < mergeMixerCount; i++) {
     this->mergeMixers[i] = new AudioMixer4();
@@ -127,3 +132,13 @@ void Synth::setFilterFrequency(float freq) {
 void Synth::setFilterResonance(float q) {
   this->filter->resonance(q);
 }
+
+
+void Synth::setLFORate(float freq) {
+  this->lfo->frequency(freq);
+}
+
+void Synth::setFilterLFOAmount(float octaves) {
+  this->filter->octaveControl(octaves);
+}
+    

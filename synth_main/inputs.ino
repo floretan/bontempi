@@ -129,6 +129,9 @@ void readInputs() {
   digitalWrite(multiplexDataPin, LOW);
   readInputKeyRow(46);
 
+  value = analogRead(multiplexPotPin);
+  synth.setFilterLFOAmount(fscale(1, 1023, 0, 7, value, 0));
+
   // 7
   digitalWrite(multiplexAPin, HIGH);
   delayMicroseconds(propagationDelay);
@@ -146,7 +149,10 @@ void readInputs() {
   digitalWrite(multiplexBPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  //  readInputKeyRow(0);
+
+  value = analogRead(multiplexPotPin);
+  synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));
+  
 
   // 4
   digitalWrite(multiplexAPin, LOW);
