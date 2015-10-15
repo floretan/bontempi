@@ -17,13 +17,26 @@ Synth::Synth() {
   this->filter = new AudioFilterStateVariable();
 
   
-
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 0);
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, audioOut, 1);
 
   this->lfo = new AudioSynthWaveformSine();
+  this->lfo->amplitude(1);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filter, 1);
+
+  this->amplitudeMixer = new AudioMixer4();
+  this->amplitudeMixer->gain(0, 0.01);
+  this->amplitudeMixer->gain(1, 0.99);
+  this->amplitudeDc = new AudioSynthWaveformDc();
+  this->amplitudeDc->amplitude(1);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->amplitudeMixer, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeDc, 0, *this->amplitudeMixer, 1);
+
+  this->amplitudeModulation = new AudioEffectMultiply(); 
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, *this->amplitudeModulation, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeMixer, 0, *this->amplitudeModulation, 1);
+  
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 1);
 
   for (int i = 0; i < mergeMixerCount; i++) {
     this->mergeMixers[i] = new AudioMixer4();
@@ -50,7 +63,7 @@ Synth::~Synth() {
 void Synth::setup() {
 
   // Audio setup.
-  AudioMemory(30);
+  AudioMemory(50);
 
   this->codec.enable();
 
@@ -148,5 +161,10 @@ void Synth::setLFORate(float freq) {
 
 void Synth::setFilterLFOAmount(float octaves) {
   this->filter->octaveControl(octaves);
+}
+
+void Synth::setAmplitudeModulationLFOAmount(float amount) {
+  this->amplitudeMixer->gain(0, amount/2);
+  this->amplitudeMixer->gain(1, 1 - amount/2);
 }
     

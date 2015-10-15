@@ -139,7 +139,13 @@ void readInputs() {
   readInputKeyRow(46);
 
   value = analogRead(multiplexPotPin);
-  synth.setFilterLFOAmount(fscale(1, 1023, 0, 7, value, 0));
+
+  if (value >= 512) {
+    synth.setFilterLFOAmount(fscale(512, 1023, 0, 3, value, -3));
+  }
+  else {
+    synth.setAmplitudeModulationLFOAmount(fscale(1, 512, 1.0, 0.0, value, 3));
+  }
 
   // 7
   digitalWrite(multiplexAPin, HIGH);
