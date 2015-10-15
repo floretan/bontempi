@@ -117,6 +117,14 @@ void Synth::setWaveForm2(byte waveform) {
   }
 }
 
+void Synth::setPulseWidth(float pw) {
+  this->pw = pw;
+  
+  for (int i = 0; i < voiceCount; i++) {
+    this->voices[i]->setPulseWidth(pw);
+  }
+}
+
 void Synth::setDetune(float detune) {
   this->detune = detune;
 

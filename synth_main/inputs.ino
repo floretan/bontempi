@@ -33,26 +33,35 @@ void readInputs() {
   delayMicroseconds(propagationDelay);
 
   int value = analogRead(multiplexPotPin);
+
   if (value != p0) {
     p0 = value;
 
-    switch (p0 * 4 / 1023 ) {
-      case 0:
-        synth.setWaveForm1(WAVEFORM_SINE);
-        break;
+    if (value < 512) {
+      switch (p0 * 4 / 512 ) {
+        case 0:
+          synth.setWaveForm1(WAVEFORM_SINE);
+          break;
 
-      case 1:
-        synth.setWaveForm1(WAVEFORM_TRIANGLE);
+        case 1:
+          synth.setWaveForm1(WAVEFORM_TRIANGLE);
 
-        break;
+          break;
 
-      case 2:
-        synth.setWaveForm1(WAVEFORM_SAWTOOTH);
-        break;
+        case 2:
+          synth.setWaveForm1(WAVEFORM_SAWTOOTH);
+          break;
 
-      case 3:
-        synth.setWaveForm1(WAVEFORM_SQUARE);
-        break;
+        case 3:
+          synth.setWaveForm1(WAVEFORM_SQUARE);
+          break;
+      }
+    }
+    else {
+      synth.setWaveForm1(WAVEFORM_PULSE);
+
+      float pw = fscale(512, 1023, 1.0, 0.1, p0, 0);
+      synth.setPulseWidth(pw);
     }
   }
 

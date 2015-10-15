@@ -7,6 +7,7 @@ Voice::Voice() {
   this->waveform1 = WAVEFORM_SINE;
   this->waveform2 = WAVEFORM_SINE;
 
+  this->pw = 1;
   this->detune = 1;
 
   this->osc1 = new AudioSynthWaveform();
@@ -39,17 +40,28 @@ Voice::~Voice() {
 }
 
 void Voice::noteOn(byte midiNote) {
+  this->currentNote = midiNote;
+
+  float f1, f2;
+  if (this->waveform1 == WAVEFORM_PULSE) {
+    f1 = tune_frequencies2_PGM[this->currentNote + 12];
+  }
+  else {
+    f1 = tune_frequencies2_PGM[this->currentNote];
+  }
+
+  f2 = tune_frequencies2_PGM[midiNote - 12]*this->detune;
 
   AudioNoInterrupts();
 
-  this->osc1->begin(0.2, tune_frequencies2_PGM[midiNote], this->waveform1);
-  
+  this->osc1->begin(0.2, f1, this->waveform1);
+
   if (this->waveform2 == WAVEFORM_NOISE) {
     this->osc2->amplitude(0);
     this->noise->amplitude(0.2);
   }
   else {
-    this->osc2->begin(0.2, tune_frequencies2_PGM[midiNote]*this->detune / 2, this->waveform2);
+    this->osc2->begin(0.2, f2, this->waveform2);
     this->noise->amplitude(0);
   }
 
@@ -63,8 +75,23 @@ void Voice::noteOff() {
 }
 
 void Voice::setWaveForm1(byte waveform) {
+
+  if (this->waveform1 == WAVEFORM_PULSE || waveform == WAVEFORM_PULSE) {
+    float f;
+    if (waveform == WAVEFORM_PULSE) {
+      f = tune_frequencies2_PGM[this->currentNote + 12];
+    }
+    else {
+      f = tune_frequencies2_PGM[this->currentNote];
+    }
+    this->osc1->begin(0.2, f, waveform);
+  }
+  else {
+    // Simply change the waveform without begin
+    this->osc1->begin(waveform);
+  }
+
   this->waveform1 = waveform;
-  this->osc1->begin(waveform);
 }
 
 void Voice::setWaveForm2(byte waveform) {
@@ -79,6 +106,12 @@ void Voice::setWaveForm2(byte waveform) {
     this->osc2->amplitude(0.2);
     this->noise->amplitude(0);
   }
+}
+
+void Voice::setPulseWidth(float pw) {
+  this->pw = pw;
+
+  this->osc1->pulseWidth(pw);
 }
 
 void Voice::setDetune(float detune) {

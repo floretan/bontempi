@@ -19,6 +19,7 @@ class Synth {
     float masterVolume;
     byte waveform1;
     byte waveform2;
+    float pw;
     float detune;
 
     AudioControlSGTL5000 codec;
@@ -42,6 +43,7 @@ class Synth {
 
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);
+    void setPulseWidth(float pw);
     void setDetune(float detune);
 
     void setFilterFrequency(float freq);

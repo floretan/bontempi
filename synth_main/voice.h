@@ -8,9 +8,12 @@
 #include <Wire.h>
 
 class Voice {
+    byte currentNote;
+  
     byte waveform1;
     byte waveform2;
-    float detune;
+    float pw; // Pulse width for the first oscillator.
+    float detune; // Detune for the second oscillator.
     AudioSynthWaveform *osc1;
     AudioSynthWaveform *osc2;
     AudioSynthNoiseWhite *noise;
@@ -33,6 +36,7 @@ class Voice {
 
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);
+    void setPulseWidth(float pw);
     void setDetune(float detune);
 };
 
