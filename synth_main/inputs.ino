@@ -82,7 +82,7 @@ void readInputs() {
       case 0:
         synth.setWaveForm2(WAVEFORM_NOISE);
         break;
-        
+
       case 1:
         synth.setWaveForm2(WAVEFORM_SINE);
         break;
@@ -124,13 +124,10 @@ void readInputs() {
   readInputKeyRow(81);
 
   value = analogRead(multiplexPotPin);
-  if (value / 10 != p2 / 10) {
-    p2 = value;
 
-    // 1.0293022 = 24th root of 2 = quarter-step.
-    float detune = fscale(1, 1023, 1, 1.0293022, p2, 0);
-    synth.setDetune(detune);
-  }
+  // 1.0293022 = 24th root of 2 = quarter-step.
+  float detune = fscale(1, 1023, 1, 1.0293022, value, 0);
+  synth.setDetune(detune);
 
   // 6
   digitalWrite(multiplexCPin, HIGH);
@@ -167,7 +164,7 @@ void readInputs() {
 
   value = analogRead(multiplexPotPin);
   synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));
-  
+
 
   // 4
   digitalWrite(multiplexAPin, LOW);

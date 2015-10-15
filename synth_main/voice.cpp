@@ -50,7 +50,7 @@ void Voice::noteOn(byte midiNote) {
     f1 = tune_frequencies2_PGM[this->currentNote];
   }
 
-  f2 = tune_frequencies2_PGM[midiNote - 12]*this->detune;
+  f2 = tune_frequencies2_PGM[midiNote - 12] * this->detune;
 
   AudioNoInterrupts();
 
@@ -116,7 +116,6 @@ void Voice::setPulseWidth(float pw) {
 
 void Voice::setDetune(float detune) {
   this->detune = detune;
-
-  // changing the frequency while playing results in unpleasant sounds.
+  this->osc2->frequency(tune_frequencies2_PGM[this->currentNote - 12] * this->detune);
 }
 
