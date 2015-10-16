@@ -11,12 +11,14 @@ Synth::Synth() {
 
   this->detune = 1;
 
+  this->sustained = false;
+
   int patchCordIndex = 0;
 
   this->finalMixer = new AudioMixer4();
   this->filter = new AudioFilterStateVariable();
 
-  
+
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
 
   this->lfo = new AudioSynthWaveformSine();
@@ -31,10 +33,10 @@ Synth::Synth() {
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->amplitudeMixer, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeDc, 0, *this->amplitudeMixer, 1);
 
-  this->amplitudeModulation = new AudioEffectMultiply(); 
+  this->amplitudeModulation = new AudioEffectMultiply();
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, *this->amplitudeModulation, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeMixer, 0, *this->amplitudeModulation, 1);
-  
+
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 1);
 
@@ -51,6 +53,7 @@ Synth::Synth() {
   for (int i = 0; i < voiceCount; i++) {
     this->voices[i] = new Voice();
     this->notes[i] = 0;
+    this->sustainedNotes[i] = 0;
 
     this->patchCords[patchCordIndex++] = new AudioConnection(*this->voices[i]->output, 0, *this->mergeMixers[i / channelsPerMixer], i % channelsPerMixer);
   }
@@ -83,14 +86,23 @@ void Synth::setMasterVolume(float vol) {
 }
 
 void Synth::noteOn(byte midiNote) {
+  int emptyNoteIndex = -1;
+  int existingNoteIndex = -1;
   for (int i = 0; i < voiceCount; i++) {
     if (this->notes[i] == 0) {
-
-      this->notes[i] = midiNote;
-      this->voices[i]->noteOn(midiNote);
-
-      break;
+      emptyNoteIndex = i;
     }
+    if (this->notes[i] == midiNote) {
+      existingNoteIndex = i;
+    }
+  }
+
+  if (existingNoteIndex != -1)  {
+    this->voices[existingNoteIndex]->noteOn(midiNote);
+  }
+  else if (emptyNoteIndex != -1) {
+    this->notes[emptyNoteIndex] = midiNote;
+    this->voices[emptyNoteIndex]->noteOn(midiNote);
   }
 }
 
@@ -98,14 +110,34 @@ void Synth::noteOff(byte midiNote) {
   for (int i = 0; i < voiceCount; i++) {
     if (this->notes[i] == midiNote) {
 
-      this->voices[i]->noteOff();
+      if (!this->sustained) {
+        this->voices[i]->noteOff();
 
-      // Setting the amplitude to 0 frees CPU,
-      // but results in a click because it comes too early.
-      // waves[i]->amplitude(0);
-      this->notes[i] = 0;
+
+        // Setting the amplitude to 0 frees CPU,
+        // but results in a click because it comes too early.
+        // waves[i]->amplitude(0);
+        this->notes[i] = 0;
+        this->sustainedNotes[i] = 0;
+      }
+      else {
+        // Delay the note off yet.
+        this->sustainedNotes[i] = midiNote;
+      }
 
       break;
+    }
+  }
+}
+
+void Synth::sustain(boolean pressed) {
+  this->sustained = pressed;
+
+  if (!pressed) {
+    for (int i = 0; i < voiceCount; i++) {
+      if (this->sustainedNotes[i] != 0 && this->notes[i] != 0) {
+        this->noteOff(this->sustainedNotes[i]);
+      }
     }
   }
 }
@@ -132,7 +164,7 @@ void Synth::setWaveForm2(byte waveform) {
 
 void Synth::setPulseWidth(float pw) {
   this->pw = pw;
-  
+
   for (int i = 0; i < voiceCount; i++) {
     this->voices[i]->setPulseWidth(pw);
   }
@@ -164,7 +196,7 @@ void Synth::setFilterLFOAmount(float octaves) {
 }
 
 void Synth::setAmplitudeModulationLFOAmount(float amount) {
-  this->amplitudeMixer->gain(0, amount/2);
-  this->amplitudeMixer->gain(1, 1 - amount/2);
+  this->amplitudeMixer->gain(0, amount / 2);
+  this->amplitudeMixer->gain(1, 1 - amount / 2);
 }
-    
+

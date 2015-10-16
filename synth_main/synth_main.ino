@@ -28,7 +28,7 @@ float lfo_depth;
 float lfo_rate;
 
 // Our main synth object.
-Synth synth; 
+Synth synth;
 
 void setup() {
 
@@ -39,10 +39,11 @@ void setup() {
   synth.setup();
 
   setupInputs();
-  
+
   // Midi setup.
   usbMIDI.setHandleNoteOff(OnNoteOff);
   usbMIDI.setHandleNoteOn(OnNoteOn);
+  usbMIDI.setHandleControlChange(OnControlChange);
 }
 
 unsigned long last_time = millis();
@@ -86,6 +87,17 @@ void OnNoteOff(byte channel, byte note, byte velocity) {
   synth.noteOff(note);
 }
 
-
+void OnControlChange(byte channel, byte control, byte value) {
+  // Sustain pedal.
+  if (control == 64) {
+    // TODO: respond to sustain pedal message.
+    if (value >= 64) {
+      synth.sustain(true);
+    }
+    else {
+      synth.sustain(false);
+    }
+  }
+}
 
 

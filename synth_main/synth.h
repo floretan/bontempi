@@ -22,9 +22,12 @@ class Synth {
     float pw;
     float detune;
 
+    boolean sustained;
+
     AudioControlSGTL5000 codec;
 
     byte notes[voiceCount];
+    byte sustainedNotes[voiceCount];
     Voice *voices[voiceCount];
     AudioMixer4 *mergeMixers[voiceCount / 4];
     AudioMixer4 *finalMixer;
@@ -44,6 +47,7 @@ class Synth {
 
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
+    void sustain(boolean pressed);
 
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);

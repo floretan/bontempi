@@ -161,6 +161,7 @@ void readInputs() {
   digitalWrite(multiplexBPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
+  readAdditionalInputs();
 
   value = analogRead(multiplexPotPin);
   synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));
@@ -177,6 +178,28 @@ void readInputs() {
   synth.setFilterResonance(res);
 }
 
+void readAdditionalInputs() {
+
+  byte pressed = digitalRead(keyInputPins[0]);
+
+  byte channel = 4;
+
+  if (pressed == LOW) {
+    if (!keyState[0]) {
+      // Send sustain pedal message.
+      usbMIDI.sendControlChange(64, 127, channel);
+      synth.sustain(true);
+      keyState[0] = true;
+    }
+  }
+  else {
+    if (keyState[0]) {
+      usbMIDI.sendControlChange(64, 0, channel);
+      synth.sustain(false);
+      keyState[0] = false;
+    }
+  }
+}
 
 void readInputKeyRow(byte baseNote) {
   for (unsigned int i = 0; i < sizeof(keyInputPins); i++) {
