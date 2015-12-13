@@ -82,6 +82,13 @@ void OnNoteOn(byte channel, byte note, byte velocity) {
 
       if (!players[i]->isPlaying()) {
 
+//        String s = "hto/";
+//        
+//        s.concat("hto_36.raw");
+//
+//        char __dataFileName[sizeof(s)];
+//        s.toCharArray(__dataFileName, sizeof(__dataFileName));
+
         switch (note) {
           case 36:
             players[i]->play("hto/hto_36.raw");
