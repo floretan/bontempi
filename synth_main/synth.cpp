@@ -70,7 +70,10 @@ void Synth::setup() {
 
   this->codec.enable();
 
-  this->setMasterVolume(0.2);
+  this->setMasterVolume(0.5);
+
+  this->setFilterLFOAmount(0);
+  this->setAmplitudeModulationLFOAmount(0);
 
   this->codec.surroundSound(7, 1);
   this->codec.surroundSoundEnable();
