@@ -14,7 +14,7 @@ const byte multiplexDataPin = 21;
 const byte multiplexPotPin = 20;
 
 const byte keyInputPins[7] = {
-  0, 1, 2, 3, 4, 5, 8
+  8, 5, 4, 3, 2, 1, 0
 };
 
 int p0, p1, p2, p3, p4, p5, p6, p7;

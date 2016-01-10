@@ -66,7 +66,7 @@ void readInputs() {
   }
 
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(67);
+  readInputKeyRow(39);
 
 
 
@@ -102,13 +102,13 @@ void readInputs() {
   }
 
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(74);
+  readInputKeyRow(53);
 
   //  3
   digitalWrite(multiplexBPin, HIGH);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(60);
+  readInputKeyRow(74);
 
   value = analogRead(multiplexPotPin);
   if (value != p3) {
@@ -121,7 +121,7 @@ void readInputs() {
   digitalWrite(multiplexAPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(81);
+//  readAdditionalInputs();
 
   value = analogRead(multiplexPotPin);
 
@@ -133,7 +133,7 @@ void readInputs() {
   digitalWrite(multiplexCPin, HIGH);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(46);
+  readInputKeyRow(81);
 
   value = analogRead(multiplexPotPin);
 
@@ -148,7 +148,7 @@ void readInputs() {
   digitalWrite(multiplexAPin, HIGH);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(53);
+  readInputKeyRow(67);
 
   value = analogRead(multiplexPotPin);
   if (value != p7) {
@@ -161,7 +161,7 @@ void readInputs() {
   digitalWrite(multiplexBPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readAdditionalInputs();
+  readInputKeyRow(60);
 
   value = analogRead(multiplexPotPin);
   synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));
@@ -171,7 +171,7 @@ void readInputs() {
   digitalWrite(multiplexAPin, LOW);
   delayMicroseconds(propagationDelay);
   digitalWrite(multiplexDataPin, LOW);
-  readInputKeyRow(39);
+  readInputKeyRow(46);
 
   value = analogRead(multiplexPotPin);
   float res = fscale(1, 1023, 0.0, 5.0, value, 0);
