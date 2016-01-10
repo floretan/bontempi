@@ -37,7 +37,10 @@ class Synth {
     AudioSynthWaveform *lfo;
     AudioMixer4 *amplitudeMixer;
     AudioSynthWaveformDc *amplitudeDc;
-    AudioConnection* patchCords[voiceCount + mergeMixerCount + 15];
+    AudioMixer4 *filterSignalMixer;
+    AudioSynthWaveformDc *filterSignalDc;
+    AudioEffectEnvelope *filterSignalEnvelope;
+    AudioConnection* patchCords[voiceCount + mergeMixerCount + 20];
 
   public:
     Synth();

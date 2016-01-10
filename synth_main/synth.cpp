@@ -20,9 +20,27 @@ Synth::Synth() {
 
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
 
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filter, 1);
   this->lfo = new AudioSynthWaveform();
   this->lfo->begin(1, 1, WAVEFORM_SAMPLE_HOLD);
+  
+  this->filterSignalMixer = new AudioMixer4();
+  this->filterSignalMixer->gain(0, 0.0);
+  this->filterSignalMixer->gain(1, 0.7);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filterSignalMixer, 0);
+  
+  this->filterSignalDc = new AudioSynthWaveformDc();
+  this->filterSignalDc->amplitude(1);
+  this->filterSignalEnvelope = new AudioEffectEnvelope();
+  this->filterSignalEnvelope->attack(10.0);
+  this->filterSignalEnvelope->decay(500.0);
+  this->filterSignalEnvelope->sustain(0.0);
+  this->filterSignalEnvelope->release(500.0);
+  
+  
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalDc, 0, *this->filterSignalEnvelope, 0);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalEnvelope, 0, *this->filterSignalMixer, 1);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalMixer, 0, *this->filter, 1);
+  
 
   this->amplitudeMixer = new AudioMixer4();
   this->amplitudeMixer->gain(0, 0.01);
@@ -88,6 +106,8 @@ void Synth::setMasterVolume(float vol) {
 }
 
 void Synth::noteOn(byte midiNote) {
+
+  this->filterSignalEnvelope->noteOn();
   int emptyNoteIndex = -1;
   int existingNoteIndex = -1;
   for (int i = 0; i < voiceCount; i++) {
@@ -109,6 +129,7 @@ void Synth::noteOn(byte midiNote) {
 }
 
 void Synth::noteOff(byte midiNote) {
+  this->filterSignalEnvelope->noteOff();
   for (int i = 0; i < voiceCount; i++) {
     if (this->notes[i] == midiNote) {
 
