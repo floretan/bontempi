@@ -34,7 +34,7 @@ class Synth {
     AudioFilterStateVariable *filter;
     AudioEffectMultiply *amplitudeModulation;
 
-    AudioSynthWaveformSine *lfo;
+    AudioSynthWaveform *lfo;
     AudioMixer4 *amplitudeMixer;
     AudioSynthWaveformDc *amplitudeDc;
     AudioConnection* patchCords[voiceCount + mergeMixerCount + 15];

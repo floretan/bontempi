@@ -18,12 +18,11 @@ Synth::Synth() {
   this->finalMixer = new AudioMixer4();
   this->filter = new AudioFilterStateVariable();
 
-
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
 
-  this->lfo = new AudioSynthWaveformSine();
-  this->lfo->amplitude(1);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filter, 1);
+  this->lfo = new AudioSynthWaveform();
+  this->lfo->begin(1, 1, WAVEFORM_SAMPLE_HOLD);
 
   this->amplitudeMixer = new AudioMixer4();
   this->amplitudeMixer->gain(0, 0.01);
