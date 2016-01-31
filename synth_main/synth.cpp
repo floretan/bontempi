@@ -94,6 +94,22 @@ void Synth::setup() {
 
   this->codec.surroundSound(7, 1);
   this->codec.surroundSoundEnable();
+
+  // Initialize the SD card
+  SPI.setMOSI(7);
+  SPI.setSCK(14);
+  if (!(SD.begin(10))) {
+    // stop here if no SD card, but print a message
+    while (1) {
+      Serial.println("Unable to access the SD card");
+      delay(500);
+    }
+  }
+
+  // Initialize the serial flash chip.
+  if (!SerialFlash.begin()) {
+    Serial.println("Unable to access SPI Flash chip");
+  }
 }
 
 void Synth::setMasterVolume(float vol) {
