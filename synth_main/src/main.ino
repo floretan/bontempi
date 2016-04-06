@@ -131,6 +131,14 @@ void readAdditionalInputs() {
   }
 }
 
+/**
+ * Read a 12-position selector.
+ */
+byte readSelectorPin(byte pin) {
+  int interval = (1023 - 1) / 11; // There are twelve positions, with 11 intervals.
+  return (analogRead(pin)+interval/2)/interval;
+}
+
 void readInputKey(byte baseNote, byte keyOffset) {
   byte pressed = digitalRead(keyInputPins[keyOffset]);
   byte note = baseNote + keyOffset;
@@ -212,7 +220,7 @@ void readInputs() {
   }
 
   // Preset selector
-  value = analogRead(multiplexInputPin4);
+  value = readSelectorPin(multiplexInputPin4);
 
   readInputKeyRow(39);
 
@@ -224,11 +232,12 @@ void readInputs() {
   delayMicroseconds(propagationDelay);
 
   // Synth osc 2 voice
-  value = analogRead(multiplexInputPin1);
+  value = readSelectorPin(multiplexInputPin1);
+  Serial.println(value);
    if (value != p1) {
      p1 = value;
 
-     switch (p1 * 5 / 1023 ) {
+     switch (p1) {
        case 0:
          synth.setWaveForm2(WAVEFORM_NOISE);
          break;
@@ -252,7 +261,7 @@ void readInputs() {
    }
 
   // Sampler selector
-  value = analogRead(multiplexInputPin4);
+  value = readSelectorPin(multiplexInputPin4);
 
   readInputKeyRow(53);
 
@@ -288,35 +297,39 @@ void readInputs() {
   //  readAdditionalInputs();
 
   // Synth osc 1
-  value = analogRead(multiplexInputPin1);
+  value = readSelectorPin(multiplexInputPin1);
+
   if (value != p0) {
     p0 = value;
 
-    if (value < 512) {
-      switch (p0 * 4 / 512 ) {
-        case 0:
-          synth.setWaveForm1(WAVEFORM_SINE);
-          break;
+    switch (p0) {
+      case 0:
+        synth.setWaveForm1(WAVEFORM_SINE);
+        break;
 
-        case 1:
-          synth.setWaveForm1(WAVEFORM_TRIANGLE);
+      case 1:
+        synth.setWaveForm1(WAVEFORM_TRIANGLE);
+        break;
 
-          break;
+      case 2:
+        synth.setWaveForm1(WAVEFORM_SAWTOOTH);
+        break;
 
-        case 2:
-          synth.setWaveForm1(WAVEFORM_SAWTOOTH);
-          break;
+      case 3:
+        synth.setWaveForm1(WAVEFORM_SQUARE);
+        break;
 
-        case 3:
-          synth.setWaveForm1(WAVEFORM_SQUARE);
-          break;
-      }
-    }
-    else {
-      synth.setWaveForm1(WAVEFORM_PULSE);
+      case 4:
+        synth.setWaveForm1(WAVEFORM_CELLO);
+        break;
 
-      float pw = fscale(512, 1023, 1.0, 0.1, p0, 0);
-      synth.setPulseWidth(pw);
+      case 5:
+        synth.setWaveForm1(WAVEFORM_PIANO);
+        break;
+
+      case 6:
+        synth.setWaveForm1(WAVEFORM_EORGAN);
+        break;
     }
   }
 
@@ -335,7 +348,7 @@ void readInputs() {
   value = analogRead(multiplexInputPin1);
 
   // LFO target
-  value = analogRead(multiplexInputPin3);
+  value = readSelectorPin(multiplexInputPin3);
 
 //  if (value >= 512) {
 //    synth.setFilterLFOAmount(fscale(512, 1023, 0, 3, value, -3));
@@ -372,6 +385,9 @@ void readInputs() {
   delayMicroseconds(propagationDelay);
 
   readInputKeyRow(60);
+
+  // Mode selector
+  value = readSelectorPin(multiplexInputPin1);
 
   // Sustain pedal?
   value = analogRead(multiplexInputPin3);
