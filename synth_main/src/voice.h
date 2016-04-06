@@ -31,8 +31,6 @@ class Voice {
 
     AudioMixer4 *noteMixer;
 
-    AudioEffectEnvelope *env;
-
     AudioConnection* patchCords[7];
 
   public:
@@ -40,7 +38,7 @@ class Voice {
     ~Voice();
 
     AudioMixer4 *output;
-
+    AudioEffectEnvelope *env;
 
     void noteOn(byte midiNote);
     void noteOff();

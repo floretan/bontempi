@@ -210,6 +210,8 @@ void readInputs() {
 
   // Amplitude envelope attack
   value = analogRead(multiplexInputPin2);
+  float attack = fscale(1, 1023, 1, 2000, value, -5);
+  synth.setAmpEnvAttack(attack);
 
   // Filter cutoff
   value = analogRead(multiplexInputPin3);

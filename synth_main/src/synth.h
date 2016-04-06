@@ -58,6 +58,11 @@ class Synth {
     void setPulseWidth(float pw);
     void setDetune(float detune);
 
+    void setAmpEnvAttack(float attack);
+    void setAmpEnvDecay(float decay);
+    void setAmpEnvSustain(float sustain);
+    void setAmpEnvRelease(float release);
+
     void setFilterFrequency(float freq);
     void setFilterResonance(float q);
 
