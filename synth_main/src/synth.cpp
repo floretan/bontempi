@@ -6,8 +6,8 @@ AudioOutputI2S  audioOut;
 
 Synth::Synth() {
 
-  this->waveform1 = WAVEFORM_SINE;
-  this->waveform2 = WAVEFORM_SINE;
+  this->waveform1 = WAVEFORM_EORGAN;
+  this->waveform2 = WAVEFORM_CELLO;
 
   this->detune = 1;
 
@@ -83,7 +83,7 @@ Synth::~Synth() {
 void Synth::setup() {
 
   // Audio setup.
-  AudioMemory(50);
+  AudioMemory(20);
 
   this->codec.enable();
 

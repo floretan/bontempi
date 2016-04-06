@@ -7,9 +7,18 @@
 #include <Audio.h>
 #include <Wire.h>
 
+#include "AKWF_cello.h"
+#define WAVEFORM_CELLO 0x10
+
+#include "AKWF_piano.h"
+#define WAVEFORM_PIANO 0x11
+
+#include "AKWF_eorgan.h"
+#define WAVEFORM_EORGAN 0x12
+
 class Voice {
     byte currentNote;
-  
+
     byte waveform1;
     byte waveform2;
     float pw; // Pulse width for the first oscillator.
@@ -17,12 +26,14 @@ class Voice {
     AudioSynthWaveform *osc1;
     AudioSynthWaveform *osc2;
     AudioSynthNoiseWhite *noise;
+    // AudioPlaySerialflashRaw *sampler;
+    AudioPlaySdRaw *sampler;
 
     AudioMixer4 *noteMixer;
 
     AudioEffectEnvelope *env;
 
-    AudioConnection* patchCords[5];
+    AudioConnection* patchCords[7];
 
   public:
     Voice();
