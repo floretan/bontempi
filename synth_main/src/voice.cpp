@@ -162,6 +162,13 @@ void Voice::setWaveForm2(byte waveform) {
   }
 }
 
+void Voice::setMix(float mix) {
+  if (mix > 1) mix = 1;
+  if (mix < 0) mix = 0;
+  this->noteMixer->gain(1, mix);
+  this->noteMixer->gain(0, 1-mix);
+}
+
 void Voice::setPulseWidth(float pw) {
   this->pw = pw;
 

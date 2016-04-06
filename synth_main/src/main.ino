@@ -388,6 +388,10 @@ void readInputs() {
 
   readInputKeyRow(46);
 
+  // Synth mix
+  value = analogRead(multiplexInputPin1);
+  synth.setMix(fscale(1, 1023, 0.0, 1.0, value, 0));
+
   // LFO rate
   value = analogRead(multiplexInputPin3);
   synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));

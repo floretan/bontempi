@@ -22,12 +22,12 @@ Synth::Synth() {
 
   this->lfo = new AudioSynthWaveform();
   this->lfo->begin(1, 1, WAVEFORM_SAMPLE_HOLD);
-  
+
   this->filterSignalMixer = new AudioMixer4();
   this->filterSignalMixer->gain(0, 0.0);
   this->filterSignalMixer->gain(1, 0.7);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filterSignalMixer, 0);
-  
+
   this->filterSignalDc = new AudioSynthWaveformDc();
   this->filterSignalDc->amplitude(1);
   this->filterSignalEnvelope = new AudioEffectEnvelope();
@@ -35,12 +35,12 @@ Synth::Synth() {
   this->filterSignalEnvelope->decay(500.0);
   this->filterSignalEnvelope->sustain(0.0);
   this->filterSignalEnvelope->release(500.0);
-  
-  
+
+
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalDc, 0, *this->filterSignalEnvelope, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalEnvelope, 0, *this->filterSignalMixer, 1);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalMixer, 0, *this->filter, 1);
-  
+
 
   this->amplitudeMixer = new AudioMixer4();
   this->amplitudeMixer->gain(0, 0.01);
@@ -201,6 +201,12 @@ void Synth::setWaveForm2(byte waveform) {
   }
 }
 
+void Synth::setMix(float mix) {
+  for (int i = 0; i < voiceCount; i++) {
+    this->voices[i]->setMix(mix);
+  }
+}
+
 void Synth::setPulseWidth(float pw) {
   this->pw = pw;
 
@@ -238,4 +244,3 @@ void Synth::setAmplitudeModulationLFOAmount(float amount) {
   this->amplitudeMixer->gain(0, amount / 2);
   this->amplitudeMixer->gain(1, 1 - amount / 2);
 }
-
