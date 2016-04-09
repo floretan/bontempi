@@ -58,10 +58,26 @@ class Synth {
     void setPulseWidth(float pw);
     void setDetune(float detune);
 
-    void setAmpEnvAttack(float attack);
-    void setAmpEnvDecay(float decay);
-    void setAmpEnvSustain(float sustain);
-    void setAmpEnvRelease(float release);
+    void setAmpEnvAttack(float attack) {
+      for (int i = 0; i < voiceCount; i++) {
+        this->voices[i]->env->attack(attack);
+      }
+    }
+    void setAmpEnvDecay(float decay) {
+      for (int i = 0; i < voiceCount; i++) {
+        this->voices[i]->env->decay(decay);
+      }
+    }
+    void setAmpEnvSustain(float sustain) {
+      for (int i = 0; i < voiceCount; i++) {
+        this->voices[i]->env->sustain(sustain);
+      }
+    }
+    void setAmpEnvRelease(float release) {
+      for (int i = 0; i < voiceCount; i++) {
+        this->voices[i]->env->release(release);
+      }
+    }
 
     void setFilterFrequency(float freq);
     void setFilterResonance(float q);

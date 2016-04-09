@@ -282,6 +282,7 @@ void readInputs() {
 
   // Amplitude envelope sustain
   value = analogRead(multiplexInputPin2);
+  synth.setAmpEnvSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
 
   // Filter envelope amount
   value = analogRead(multiplexInputPin3);
@@ -361,6 +362,7 @@ void readInputs() {
 
   // Amplitude envelope release
   value = analogRead(multiplexInputPin2);
+  synth.setAmpEnvRelease(fscale(1, 1023, 1, 2000, value, -5));
 
   // LFO target
   value = readSelectorPin(multiplexInputPin3);
@@ -389,6 +391,7 @@ void readInputs() {
 
   // Amplitude envelope decay
   value = analogRead(multiplexInputPin2);
+  synth.setAmpEnvDecay(fscale(1, 1023, 1, 2000, value, -5));
 
   // Filter resonance
   value = analogRead(multiplexInputPin3);

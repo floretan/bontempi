@@ -224,12 +224,6 @@ void Synth::setDetune(float detune) {
   }
 }
 
-void Synth::setAmpEnvAttack(float attack) {
-  for (int i = 0; i < voiceCount; i++) {
-    this->voices[i]->env->attack(attack);
-  }
-}
-
 void Synth::setFilterFrequency(float freq) {
   this->filter->frequency(freq);
 }
