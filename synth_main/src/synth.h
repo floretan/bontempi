@@ -73,6 +73,20 @@ class Synth {
       if (amount < -1) amount = -1;
       this->filterSignalDc->amplitude(amount);
     }
+
+    void setFilterEnvelopeAttack(float attack) {
+      this->filterSignalEnvelope->attack(attack);
+    }
+    void setFilterEnvelopeDecay(float decay) {
+      this->filterSignalEnvelope->decay(decay);
+    }
+    void setFilterEnvelopeSustain(float sustain) {
+      this->filterSignalEnvelope->sustain(sustain);
+    }
+    void setFilterEnvelopeRelease(float release) {
+      this->filterSignalEnvelope->release(release);
+    }
+
     void setAmplitudeModulationLFOAmount(float amount);
 };
 
