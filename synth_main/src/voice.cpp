@@ -58,7 +58,7 @@ void Voice::noteOn(byte midiNote) {
   AudioNoInterrupts();
 
     if (this->waveform1 < 0x10) {
-      this->osc1->begin(0.2, f1, this->waveform1);
+      this->osc1->begin(1.0, f1, this->waveform1);
     }
     else {
       switch(this->waveform1) {
@@ -75,16 +75,16 @@ void Voice::noteOn(byte midiNote) {
           break;
       }
 
-      this->osc1->begin(0.2, f1, WAVEFORM_ARBITRARY);
+      this->osc1->begin(1.0, f1, WAVEFORM_ARBITRARY);
     }
 
 
   if (this->waveform2 == WAVEFORM_NOISE) {
     this->osc2->amplitude(0);
-    this->noise->amplitude(0.2);
+    this->noise->amplitude(1.0);
   }
   else {
-    this->osc2->begin(0.2, f2, this->waveform2);
+    this->osc2->begin(1.0, f2, this->waveform2);
     this->noise->amplitude(0);
   }
 
@@ -123,7 +123,7 @@ void Voice::setWaveForm1(byte waveform) {
     else {
       f = tune_frequencies2_PGM[this->currentNote];
     }
-    this->osc1->begin(0.2, f, waveform);
+    this->osc1->begin(1.0, f, waveform);
   }
   else {
     if (waveform < 0x10) {
@@ -153,11 +153,11 @@ void Voice::setWaveForm2(byte waveform) {
 
   if (this->waveform2 == WAVEFORM_NOISE) {
     this->osc2->amplitude(0);
-    this->noise->amplitude(0.2);
+    this->noise->amplitude(1.0);
   }
   else {
     this->osc2->begin(waveform);
-    this->osc2->amplitude(0.2);
+    this->osc2->amplitude(1.0);
     this->noise->amplitude(0);
   }
 }

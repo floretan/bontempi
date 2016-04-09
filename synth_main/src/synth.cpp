@@ -65,6 +65,7 @@ Synth::Synth() {
     this->mergeMixers[i]->gain(3, 0.25);
 
     this->patchCords[patchCordIndex++] = new AudioConnection(*this->mergeMixers[i], 0, *this->finalMixer, i);
+    this->finalMixer->gain(i, 1.0/mergeMixerCount);
   }
 
   for (int i = 0; i < voiceCount; i++) {
