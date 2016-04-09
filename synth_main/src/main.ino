@@ -280,6 +280,7 @@ void readInputs() {
 
   // Filter envelope amount
   value = analogRead(multiplexInputPin3);
+  synth.setFilterEnvelopeAmount(fscale(1, 1023, -1.0, 1.0, value, 0));
 
   // Master volume
   value = analogRead(multiplexInputPin4);

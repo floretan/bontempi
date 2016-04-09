@@ -68,6 +68,11 @@ class Synth {
 
     void setLFORate(float freq);
     void setFilterLFOAmount(float octaves);
+    void setFilterEnvelopeAmount(float amount) {
+      if (amount > 1) amount = 1;
+      if (amount < -1) amount = -1;
+      this->filterSignalDc->amplitude(amount);
+    }
     void setAmplitudeModulationLFOAmount(float amount);
 };
 
