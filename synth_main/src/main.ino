@@ -279,6 +279,7 @@ void readInputs() {
 
   // Transpose
   value = analogRead(multiplexInputPin1);
+  synth.setTranspose(map(value, 1, 1022, -12, 12));
 
   // Amplitude envelope sustain
   value = analogRead(multiplexInputPin2);

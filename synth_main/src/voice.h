@@ -23,6 +23,7 @@ class Voice {
     byte waveform2;
     float pw; // Pulse width for the first oscillator.
     float detune; // Detune for the second oscillator.
+    int transpose;  // Transpose the second oscillator.
     AudioSynthWaveform *osc1;
     AudioSynthWaveform *osc2;
     AudioSynthNoiseWhite *noise;
@@ -48,6 +49,7 @@ class Voice {
     void setMix(float mix);
     void setPulseWidth(float pw);
     void setDetune(float detune);
+    void setTranspose(int offset);
 };
 
 #endif

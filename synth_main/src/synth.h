@@ -57,6 +57,7 @@ class Synth {
     void setMix(float mix);
     void setPulseWidth(float pw);
     void setDetune(float detune);
+    void setTranspose(int offset);
 
     void setAmpEnvAttack(float attack) {
       for (int i = 0; i < voiceCount; i++) {

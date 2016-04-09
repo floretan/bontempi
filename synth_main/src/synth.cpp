@@ -217,10 +217,14 @@ void Synth::setPulseWidth(float pw) {
 }
 
 void Synth::setDetune(float detune) {
-  this->detune = detune;
-
   for (int i = 0; i < voiceCount; i++) {
     this->voices[i]->setDetune(detune);
+  }
+}
+
+void Synth::setTranspose(int offset) {
+  for (int i = 0; i < voiceCount; i++) {
+    this->voices[i]->setTranspose(offset);
   }
 }
 
