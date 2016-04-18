@@ -11,9 +11,6 @@
 
 #include "Arduino.h"
 
-float lfo_depth;
-float lfo_rate;
-
 // Our main synth object.
 Synth synth;
 
