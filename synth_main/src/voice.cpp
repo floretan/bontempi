@@ -6,7 +6,6 @@ Voice::Voice() {
   this->waveform1 = WAVEFORM_CELLO;
   this->waveform2 = WAVEFORM_SAWTOOTH;
 
-  this->pw = 1;
   this->detune = 1;
 
   this->osc1 = new AudioSynthWaveform();
@@ -115,34 +114,22 @@ void Voice::noteOff() {
 
 void Voice::setWaveForm1(byte waveform) {
 
-  if (this->waveform1 == WAVEFORM_PULSE || waveform == WAVEFORM_PULSE) {
-    float f;
-    if (waveform == WAVEFORM_PULSE) {
-      f = tune_frequencies2_PGM[this->currentNote + 12];
-    }
-    else {
-      f = tune_frequencies2_PGM[this->currentNote];
-    }
-    this->osc1->begin(1.0, f, waveform);
+  if (waveform < 0x10) {
+    // Simply change the waveform without begin
+    this->osc1->begin(waveform);
   }
   else {
-    if (waveform < 0x10) {
-      // Simply change the waveform without begin
-      this->osc1->begin(waveform);
-    }
-    else {
-      switch(waveform) {
-        case WAVEFORM_CELLO:
-          this->osc1->arbitraryWaveform(AKWF_cello_0001, 880);
-          break;
+    switch(waveform) {
+      case WAVEFORM_CELLO:
+        this->osc1->arbitraryWaveform(AKWF_cello_0001, 880);
+        break;
 
-        case WAVEFORM_EORGAN:
-          this->osc1->arbitraryWaveform(AKWF_eorgan_0001, 880);
-          break;
-      }
-
-      this->osc1->begin(WAVEFORM_ARBITRARY);
+      case WAVEFORM_EORGAN:
+        this->osc1->arbitraryWaveform(AKWF_eorgan_0001, 880);
+        break;
     }
+
+    this->osc1->begin(WAVEFORM_ARBITRARY);
   }
 
   this->waveform1 = waveform;
@@ -167,12 +154,6 @@ void Voice::setMix(float mix) {
   if (mix < 0) mix = 0;
   this->noteMixer->gain(1, mix);
   this->noteMixer->gain(0, 1-mix);
-}
-
-void Voice::setPulseWidth(float pw) {
-  this->pw = pw;
-
-  this->osc1->pulseWidth(pw);
 }
 
 void Voice::setDetune(float detune) {

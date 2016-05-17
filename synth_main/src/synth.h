@@ -58,7 +58,6 @@ class Synth {
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);
     void setMix(float mix);
-    void setPulseWidth(float pw);
     void setDetune(float detune);
     void setTranspose(int offset);
 

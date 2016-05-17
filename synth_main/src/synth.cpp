@@ -202,14 +202,6 @@ void Synth::setMix(float mix) {
   }
 }
 
-void Synth::setPulseWidth(float pw) {
-  this->pw = pw;
-
-  for (int i = 0; i < voiceCount; i++) {
-    this->voices[i]->setPulseWidth(pw);
-  }
-}
-
 void Synth::setDetune(float detune) {
   for (int i = 0; i < voiceCount; i++) {
     this->voices[i]->setDetune(detune);
