@@ -30,6 +30,13 @@ void setup() {
 }
 
 unsigned long last_time = millis();
+
+// Keep track of the frame count so we can read inputs less often.
+byte frameCount = 0;
+
+// How often to read inputs.
+byte frameStep = 8;
+
 void loop() {
 
   // Change this to if(1) for measurement output every 2 seconds
@@ -51,6 +58,8 @@ void loop() {
   usbMIDI.read();
 
   readInputs();
+
+  frameCount++;
 }
 
 void OnNoteOn(byte channel, byte note, byte velocity) {
@@ -202,25 +211,27 @@ void readInputs() {
   digitalWrite(multiplexCPin, LOW);
   delayMicroseconds(propagationDelay);
 
-  // Mode depth
-  int value = analogRead(multiplexInputPin1);
-
-  // Amplitude envelope attack
-  value = analogRead(multiplexInputPin2);
-  synth.setAmpEnvAttack(fscale(1, 1023, 1, 2000, value, -5));
-
-  // Filter cutoff
-  value = analogRead(multiplexInputPin3);
-  if (value != p3) {
-   p3 = value;
-   float freq = fscale(1, 1023, 200, 8000, p3, -3);
-   synth.setFilterFrequency(freq);
-  }
-
-  // Preset selector
-  value = readSelectorPin(multiplexInputPin4);
-
   readInputKeyRow(39);
+
+  if (frameCount % frameStep == 0) {
+    // Mode depth
+    int value = analogRead(multiplexInputPin1);
+
+    // Amplitude envelope attack
+    value = analogRead(multiplexInputPin2);
+    synth.setAmpEnvAttack(fscale(1, 1023, 1, 2000, value, -5));
+
+    // Filter cutoff
+    value = analogRead(multiplexInputPin3);
+    if (value != p3) {
+     p3 = value;
+     float freq = fscale(1, 1023, 200, 8000, p3, -3);
+     synth.setFilterFrequency(freq);
+    }
+
+    // Preset selector
+    value = readSelectorPin(multiplexInputPin4);
+  }
 
 
   /**
@@ -229,42 +240,49 @@ void readInputs() {
   digitalWrite(multiplexAPin, HIGH);
   delayMicroseconds(propagationDelay);
 
-  // Synth osc 2 voice
-  value = readSelectorPin(multiplexInputPin1);
-  if (value != p1) {
-    p1 = value;
-
-    switch (p1) {
-      case 0:
-        synth.setWaveForm2(WAVEFORM_NOISE);
-        break;
-
-      case 1:
-        synth.setWaveForm2(WAVEFORM_SINE);
-        break;
-
-      case 2:
-        synth.setWaveForm2(WAVEFORM_TRIANGLE);
-        break;
-
-      case 3:
-        synth.setWaveForm2(WAVEFORM_SAWTOOTH);
-        break;
-
-      case 4:
-        synth.setWaveForm2(WAVEFORM_SQUARE);
-        break;
-    }
-  }
-
-  // Filter envelope sustain.
-  value = analogRead(multiplexInputPin2);
-  synth.setFilterEnvelopeSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
-
-  // Sampler selector
-  value = readSelectorPin(multiplexInputPin4);
-
   readInputKeyRow(53);
+
+  if (frameCount % frameStep == 1) {
+
+    // Synth osc 2 voice
+    int value = readSelectorPin(multiplexInputPin1);
+    if (value != p1) {
+      p1 = value;
+
+      switch (p1) {
+        case 0:
+          synth.setWaveForm2(WAVEFORM_NOISE);
+          break;
+
+        case 1:
+          synth.setWaveForm2(WAVEFORM_SINE);
+          break;
+
+        case 2:
+          synth.setWaveForm2(WAVEFORM_TRIANGLE);
+          break;
+
+        case 3:
+          synth.setWaveForm2(WAVEFORM_SAWTOOTH);
+          break;
+
+        case 4:
+          synth.setWaveForm2(WAVEFORM_SQUARE);
+          break;
+      }
+    }
+
+    // Filter envelope sustain.
+    value = analogRead(multiplexInputPin2);
+    synth.setFilterEnvelopeSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
+
+    // LFO Waveform
+    value = readSelectorPin(multiplexInputPin3);
+    synth.setLFOWaveform(value);
+
+    // Sampler selector
+    value = readSelectorPin(multiplexInputPin4);
+  }
 
 
   /**
@@ -272,26 +290,30 @@ void readInputs() {
    */
   digitalWrite(multiplexBPin, HIGH);
   delayMicroseconds(propagationDelay);
+
   readInputKeyRow(74);
 
-  // Transpose
-  value = analogRead(multiplexInputPin1);
-  synth.setTranspose(map(value, 1, 1022, -12, 12));
+  if (frameCount % frameStep == 2) {
 
-  // Amplitude envelope sustain
-  value = analogRead(multiplexInputPin2);
-  synth.setAmpEnvSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
+    // Transpose
+    int value = analogRead(multiplexInputPin1);
+    synth.setTranspose(map(value, 1, 1022, -12, 12));
 
-  // Filter envelope amount
-  value = analogRead(multiplexInputPin3);
-  synth.setFilterEnvelopeAmount(fscale(1, 1023, -1.0, 1.0, value, 0));
+    // Amplitude envelope sustain
+    value = analogRead(multiplexInputPin2);
+    synth.setAmpEnvSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
 
-  // Master volume
-  value = analogRead(multiplexInputPin4);
-  if (value != p7) {
-   p7 = value;
+    // Filter envelope amount
+    value = analogRead(multiplexInputPin3);
+    synth.setFilterEnvelopeAmount(fscale(1, 1023, -1.0, 1.0, value, 0));
 
-   synth.setMasterVolume((float)p7 / 1023 * 0.8);
+    // Master volume
+    value = analogRead(multiplexInputPin4);
+    if (value != p7) {
+     p7 = value;
+
+     synth.setMasterVolume((float)p7 / 1023 * 0.8);
+    }
   }
 
 
@@ -301,76 +323,75 @@ void readInputs() {
   digitalWrite(multiplexAPin, LOW);
   delayMicroseconds(propagationDelay);
 
-  //  readAdditionalInputs();
+  if (frameCount % frameStep == 3) {
 
-  // Synth osc 1
-  value = readSelectorPin(multiplexInputPin1);
+    // Synth osc 1
+    int value = readSelectorPin(multiplexInputPin1);
 
-  if (value != p0) {
-    p0 = value;
+    if (value != p0) {
+      p0 = value;
 
-    switch (p0) {
-      case 0:
-        synth.setWaveForm1(WAVEFORM_SINE);
-        break;
+      switch (p0) {
+        case 0:
+          synth.setWaveForm1(WAVEFORM_SINE);
+          break;
 
-      case 1:
-        synth.setWaveForm1(WAVEFORM_TRIANGLE);
-        break;
+        case 1:
+          synth.setWaveForm1(WAVEFORM_TRIANGLE);
+          break;
 
-      case 2:
-        synth.setWaveForm1(WAVEFORM_SAWTOOTH);
-        break;
+        case 2:
+          synth.setWaveForm1(WAVEFORM_SAWTOOTH);
+          break;
 
-      case 3:
-        synth.setWaveForm1(WAVEFORM_SQUARE);
-        break;
+        case 3:
+          synth.setWaveForm1(WAVEFORM_SQUARE);
+          break;
 
-      case 4:
-        synth.setWaveForm1(WAVEFORM_CELLO);
-        break;
+        case 4:
+          synth.setWaveForm1(WAVEFORM_CELLO);
+          break;
 
-      case 5:
-        synth.setWaveForm1(WAVEFORM_PIANO);
-        break;
+        case 5:
+          synth.setWaveForm1(WAVEFORM_PIANO);
+          break;
 
-      case 6:
-        synth.setWaveForm1(WAVEFORM_EORGAN);
-        break;
+        case 6:
+          synth.setWaveForm1(WAVEFORM_EORGAN);
+          break;
+      }
     }
+
+    // Filter envelope attack
+    value = analogRead(multiplexInputPin2);
+    synth.setFilterEnvelopeAttack(fscale(1, 1023, 1, 2000, value, -5));
+
+    // LFO amplitude
+    value = analogRead(multiplexInputPin3);
+    synth.setLFOAmplitude(fscale(1, 1023, 0.0, 1.0, value, 0));
   }
-
-  // Filter envelope attack
-  value = analogRead(multiplexInputPin2);
-  synth.setFilterEnvelopeAttack(fscale(1, 1023, 1, 2000, value, -5));
-
-  // LFO amplitude
-  value = analogRead(multiplexInputPin3);
-
 
   /**
    * Multiplexer pin 6
    */
   digitalWrite(multiplexCPin, HIGH);
   delayMicroseconds(propagationDelay);
+
   readInputKeyRow(81);
 
-  // Tap tempo
-  value = analogRead(multiplexInputPin1);
+  if (frameCount % frameStep == 4) {
 
-  // Amplitude envelope release
-  value = analogRead(multiplexInputPin2);
-  synth.setAmpEnvRelease(fscale(1, 1023, 1, 2000, value, -5));
+    // Tap tempo
+    int value = analogRead(multiplexInputPin1);
 
-  // LFO target
-  value = readSelectorPin(multiplexInputPin3);
+    // Amplitude envelope release
+    value = analogRead(multiplexInputPin2);
+    synth.setAmpEnvRelease(fscale(1, 1023, 1, 2000, value, -5));
 
-//  if (value >= 512) {
-//    synth.setFilterLFOAmount(fscale(512, 1023, 0, 3, value, -3));
-//  }
-//  else {
-//    synth.setAmplitudeModulationLFOAmount(fscale(1, 512, 1.0, 0.0, value, 3));
-//  }
+    // LFO target
+    value = readSelectorPin(multiplexInputPin3);
+    synth.setLFOTarget(value);
+  }
 
 
   /**
@@ -381,20 +402,23 @@ void readInputs() {
 
   readInputKeyRow(67);
 
-  // Detune
-  value = analogRead(multiplexInputPin1);
-  // 1.0293022 = 24th root of 2 = quarter-step.
-  float detune = fscale(1, 1023, 1, 1.0293022, value, 0);
-  synth.setDetune(detune);
+  if (frameCount % frameStep == 5) {
 
-  // Amplitude envelope decay
-  value = analogRead(multiplexInputPin2);
-  synth.setAmpEnvDecay(fscale(1, 1023, 1, 2000, value, -5));
+    // Detune
+    int value = analogRead(multiplexInputPin1);
+    // 1.0293022 = 24th root of 2 = quarter-step.
+    float detune = fscale(1, 1023, 1, 1.0293022, value, 0);
+    synth.setDetune(detune);
 
-  // Filter resonance
-  value = analogRead(multiplexInputPin3);
-  float res = fscale(1, 1023, 0.0, 5.0, value, 0);
-  synth.setFilterResonance(res);
+    // Amplitude envelope decay
+    value = analogRead(multiplexInputPin2);
+    synth.setAmpEnvDecay(fscale(1, 1023, 1, 2000, value, -5));
+
+    // Filter resonance
+    value = analogRead(multiplexInputPin3);
+    float res = fscale(1, 1023, 0.0, 5.0, value, 0);
+    synth.setFilterResonance(res);
+  }
 
 
   /**
@@ -405,19 +429,20 @@ void readInputs() {
 
   readInputKeyRow(60);
 
-  // Mode selector
-  value = readSelectorPin(multiplexInputPin1);
+  if (frameCount % frameStep == 6) {
+    // Mode selector
+    int value = readSelectorPin(multiplexInputPin1);
 
-  // Filter envelope release
-  value = analogRead(multiplexInputPin2);
-  synth.setFilterEnvelopeRelease(fscale(1, 1023, 1, 2000, value, -5));
+    // Filter envelope release
+    value = analogRead(multiplexInputPin2);
+    synth.setFilterEnvelopeRelease(fscale(1, 1023, 1, 2000, value, -5));
 
-  // Sustain pedal?
-  value = analogRead(multiplexInputPin3);
+    // Sustain pedal?
+    value = analogRead(multiplexInputPin3);
 
-  // Sampler velocity
-  value = analogRead(multiplexInputPin4);
-
+    // Sampler velocity
+    value = analogRead(multiplexInputPin4);
+  }
 
   /**
    * Multiplexer pin 4
@@ -427,18 +452,20 @@ void readInputs() {
 
   readInputKeyRow(46);
 
-  // Synth mix
-  value = analogRead(multiplexInputPin1);
-  synth.setMix(fscale(1, 1023, 0.0, 1.0, value, 0));
+  if (frameCount % frameStep == 7) {
+    // Synth mix
+    int value = analogRead(multiplexInputPin1);
+    synth.setMix(fscale(1, 1023, 0.0, 1.0, value, 0));
 
-  // Filter envelope decay
-  value = analogRead(multiplexInputPin2);
-  synth.setFilterEnvelopeDecay(fscale(1, 1023, 1, 2000, value, -5));
+    // Filter envelope decay
+    value = analogRead(multiplexInputPin2);
+    synth.setFilterEnvelopeDecay(fscale(1, 1023, 1, 2000, value, -5));
 
-  // LFO rate
-  value = analogRead(multiplexInputPin3);
-  synth.setLFORate(fscale(1, 1023, 0.05, 10.0, value, -1));
+    // LFO rate
+    value = analogRead(multiplexInputPin3);
+    synth.setLFORate(fscale(1, 1023, 0.05, 20.0, value, -2));
 
-  // Mixer: Synth volume
-  value = analogRead(multiplexInputPin4);
+    // Mixer: Synth volume
+    value = analogRead(multiplexInputPin4);
+  }
 }
