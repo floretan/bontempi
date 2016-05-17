@@ -6,8 +6,8 @@ AudioOutputI2S  audioOut;
 
 Synth::Synth() {
 
-  this->waveform1 = WAVEFORM_EORGAN;
-  this->waveform2 = WAVEFORM_CELLO;
+  this->waveform1 = 0;
+  this->waveform2 = 0;
 
   this->detune = 1;
 

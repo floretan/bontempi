@@ -245,35 +245,10 @@ void readInputs() {
   if (frameCount % frameStep == 1) {
 
     // Synth osc 2 voice
-    int value = readSelectorPin(multiplexInputPin1);
-    if (value != p1) {
-      p1 = value;
-
-      switch (p1) {
-        case 0:
-          synth.setWaveForm2(WAVEFORM_NOISE);
-          break;
-
-        case 1:
-          synth.setWaveForm2(WAVEFORM_SINE);
-          break;
-
-        case 2:
-          synth.setWaveForm2(WAVEFORM_TRIANGLE);
-          break;
-
-        case 3:
-          synth.setWaveForm2(WAVEFORM_SAWTOOTH);
-          break;
-
-        case 4:
-          synth.setWaveForm2(WAVEFORM_SQUARE);
-          break;
-      }
-    }
+    synth.setWaveForm2(readSelectorPin(multiplexInputPin1));
 
     // Filter envelope sustain.
-    value = analogRead(multiplexInputPin2);
+    int value = analogRead(multiplexInputPin2);
     synth.setFilterEnvelopeSustain(fscale(1, 1023, 0.0, 1.0, value, 0));
 
     // LFO Waveform
@@ -326,44 +301,10 @@ void readInputs() {
   if (frameCount % frameStep == 3) {
 
     // Synth osc 1
-    int value = readSelectorPin(multiplexInputPin1);
-
-    if (value != p0) {
-      p0 = value;
-
-      switch (p0) {
-        case 0:
-          synth.setWaveForm1(WAVEFORM_SINE);
-          break;
-
-        case 1:
-          synth.setWaveForm1(WAVEFORM_TRIANGLE);
-          break;
-
-        case 2:
-          synth.setWaveForm1(WAVEFORM_SAWTOOTH);
-          break;
-
-        case 3:
-          synth.setWaveForm1(WAVEFORM_SQUARE);
-          break;
-
-        case 4:
-          synth.setWaveForm1(WAVEFORM_CELLO);
-          break;
-
-        case 5:
-          synth.setWaveForm1(WAVEFORM_PIANO);
-          break;
-
-        case 6:
-          synth.setWaveForm1(WAVEFORM_EORGAN);
-          break;
-      }
-    }
+    synth.setWaveForm1(readSelectorPin(multiplexInputPin1));
 
     // Filter envelope attack
-    value = analogRead(multiplexInputPin2);
+    int value = analogRead(multiplexInputPin2);
     synth.setFilterEnvelopeAttack(fscale(1, 1023, 1, 2000, value, -5));
 
     // LFO amplitude

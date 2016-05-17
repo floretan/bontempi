@@ -2,23 +2,17 @@
 #include "frequencies.h"
 
 Voice::Voice() {
-
-  this->waveform1 = WAVEFORM_CELLO;
-  this->waveform2 = WAVEFORM_SAWTOOTH;
-
   this->detune = 1;
 
   this->osc1 = new AudioSynthWaveform();
+  this->osc1->amplitude(1.0);
   this->osc2 = new AudioSynthWaveform();
+  this->osc2->amplitude(1.0);
   this->noise = new AudioSynthNoiseWhite();
- this->sampler = new AudioPlaySdRaw();
+  this->sampler = new AudioPlaySdRaw();
   // this->sampler = new AudioPlaySerialflashRaw();
 
   this->noteMixer = new AudioMixer4();
-  this->noteMixer->gain(0, 1);
-  this->noteMixer->gain(1, 1);
-  this->noteMixer->gain(2, 0);
-  this->noteMixer->gain(3, 1);
 
   this->env = new AudioEffectEnvelope();
   this->env->attack(2.0);
@@ -44,48 +38,9 @@ Voice::~Voice() {
 void Voice::noteOn(byte midiNote) {
   this->currentNote = midiNote;
 
-  float f1, f2;
-  if (this->waveform1 == WAVEFORM_PULSE) {
-    f1 = tune_frequencies2_PGM[this->currentNote + 12];
-  }
-  else {
-    f1 = tune_frequencies2_PGM[this->currentNote];
-  }
-
-  f2 = tune_frequencies2_PGM[midiNote + this->transpose] * this->detune;
-
   AudioNoInterrupts();
-
-    if (this->waveform1 < 0x10) {
-      this->osc1->begin(1.0, f1, this->waveform1);
-    }
-    else {
-      switch(this->waveform1) {
-        case WAVEFORM_CELLO:
-          this->osc1->arbitraryWaveform(AKWF_cello_0008, 880);
-          break;
-
-        case WAVEFORM_PIANO:
-          this->osc1->arbitraryWaveform(AKWF_piano_0002, 880);
-          break;
-
-        case WAVEFORM_EORGAN:
-          this->osc1->arbitraryWaveform(AKWF_eorgan_0001, 880);
-          break;
-      }
-
-      this->osc1->begin(1.0, f1, WAVEFORM_ARBITRARY);
-    }
-
-
-  if (this->waveform2 == WAVEFORM_NOISE) {
-    this->osc2->amplitude(0);
-    this->noise->amplitude(1.0);
-  }
-  else {
-    this->osc2->begin(1.0, f2, this->waveform2);
-    this->noise->amplitude(0);
-  }
+  this->osc1->frequency(tune_frequencies2_PGM[this->currentNote]);
+  this->osc2->frequency(tune_frequencies2_PGM[midiNote + this->transpose] * this->detune);
 
   // if (!this->sampler->isPlaying()) {
   //
@@ -114,38 +69,66 @@ void Voice::noteOff() {
 
 void Voice::setWaveForm1(byte waveform) {
 
-  if (waveform < 0x10) {
-    // Simply change the waveform without begin
-    this->osc1->begin(waveform);
-  }
-  else {
     switch(waveform) {
-      case WAVEFORM_CELLO:
-        this->osc1->arbitraryWaveform(AKWF_cello_0001, 880);
+      case 0:
+        this->osc1->begin(WAVEFORM_SINE);
         break;
 
-      case WAVEFORM_EORGAN:
+      case 1:
+        this->osc1->begin(WAVEFORM_TRIANGLE);
+        break;
+
+      case 2:
+        this->osc1->begin(WAVEFORM_SAWTOOTH);
+        break;
+
+      case 3:
+        this->osc1->begin(WAVEFORM_SQUARE);
+        break;
+
+      case 4:
+        this->osc1->arbitraryWaveform(AKWF_cello_0001, 880);
+        this->osc1->begin(WAVEFORM_ARBITRARY);
+        break;
+
+      case 5:
+        this->osc1->arbitraryWaveform(AKWF_piano_0002, 880);
+        this->osc1->begin(WAVEFORM_ARBITRARY);
+        break;
+
+      case 6:
         this->osc1->arbitraryWaveform(AKWF_eorgan_0001, 880);
+        this->osc1->begin(WAVEFORM_ARBITRARY);
         break;
     }
-
-    this->osc1->begin(WAVEFORM_ARBITRARY);
-  }
-
-  this->waveform1 = waveform;
 }
 
 void Voice::setWaveForm2(byte waveform) {
-  this->waveform2 = waveform;
-
-  if (this->waveform2 == WAVEFORM_NOISE) {
+  if (waveform == 0) {
     this->osc2->amplitude(0);
     this->noise->amplitude(1.0);
   }
   else {
-    this->osc2->begin(waveform);
     this->osc2->amplitude(1.0);
     this->noise->amplitude(0);
+
+    switch(waveform) {
+      case 1:
+        this->osc2->begin(WAVEFORM_SINE);
+        break;
+
+      case 2:
+        this->osc2->begin(WAVEFORM_TRIANGLE);
+        break;
+
+      case 3:
+        this->osc2->begin(WAVEFORM_SAWTOOTH);
+        break;
+
+      case 4:
+        this->osc2->begin(WAVEFORM_SQUARE);
+        break;
+    }
   }
 }
 
@@ -153,6 +136,7 @@ void Voice::setMix(float mix) {
   if (mix > 1) mix = 1;
   if (mix < 0) mix = 0;
   this->noteMixer->gain(1, mix);
+  this->noteMixer->gain(2, mix);
   this->noteMixer->gain(0, 1-mix);
 }
 
