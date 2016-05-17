@@ -22,6 +22,9 @@ class Synth {
     float pw;
     float detune;
 
+    byte lfoWaveform;
+    byte lfoTarget;
+
     boolean sustained;
 
     AudioControlSGTL5000 codec;
@@ -83,8 +86,92 @@ class Synth {
     void setFilterFrequency(float freq);
     void setFilterResonance(float q);
 
-    void setLFORate(float freq);
-    void setFilterLFOAmount(float octaves);
+
+    void setLFOWaveform(byte waveform) {
+      if (waveform == this->lfoWaveform) {
+        return;
+      }
+      else {
+        this->lfoWaveform = waveform;
+      }
+
+      switch(waveform) {
+        case 0:
+          this->lfo->begin(WAVEFORM_SINE);
+          break;
+        case 1:
+
+          this->lfo->begin(WAVEFORM_SAWTOOTH);
+          break;
+        case 2:
+          this->lfo->begin(WAVEFORM_SAWTOOTH_REVERSE);
+          break;
+        case 3:
+          this->lfo->begin(WAVEFORM_SQUARE);
+          break;
+        case 4:
+          this->lfo->begin(WAVEFORM_SAMPLE_HOLD);
+          break;
+
+        // TODO: add remaining waveforms
+      }
+    }
+    void setLFORate(float freq) {
+      this->lfo->frequency(freq);
+    }
+    void setLFOAmplitude(float amplitude) {
+      if (amplitude > 1) amplitude = 1;
+      if (amplitude < 0) amplitude = 0;
+      this->lfo->amplitude(amplitude);
+
+      switch (this->lfoTarget) {
+        case 0:
+        case 2:
+          // Amplitude modulation
+          this->amplitudeDc->amplitude(1, 1 - amplitude * 0.5);
+          break;
+      }
+    }
+    void setLFOTarget(byte target) {
+      if (target == this->lfoTarget) {
+        return;
+      }
+      else {
+        this->lfoTarget = target;
+      }
+
+      // Reset all targets.
+      this->filterSignalMixer->gain(0, 0);
+      this->amplitudeMixer->gain(0, 0.0);
+      this->amplitudeMixer->gain(1, 1.0);
+
+      switch(target) {
+        case 0:
+          // Amplitude modulation
+          this->amplitudeMixer->gain(0, 1);
+          this->amplitudeMixer->gain(1, 1);
+          Serial.println("Amplitude modulation");
+          break;
+
+        case 1:
+          // Filter modulation
+          this->filterSignalMixer->gain(0, 1.0);
+          Serial.println("Filter modulation");
+          break;
+
+        case 2:
+          // Amplitude and Filter modulation
+          this->amplitudeMixer->gain(0, 1);
+          this->amplitudeMixer->gain(1, 1);
+
+          this->filterSignalMixer->gain(0, 1.0);
+
+          Serial.println("Filter and amplitude modulation");
+          break;
+
+      }
+    }
+
     void setFilterEnvelopeAmount(float amount) {
       if (amount > 1) amount = 1;
       if (amount < -1) amount = -1;
@@ -103,8 +190,6 @@ class Synth {
     void setFilterEnvelopeRelease(float release) {
       this->filterSignalEnvelope->release(release);
     }
-
-    void setAmplitudeModulationLFOAmount(float amount);
 };
 
 #endif

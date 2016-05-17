@@ -21,21 +21,16 @@ Synth::Synth() {
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->finalMixer, 0, *this->filter, 0);
 
   this->lfo = new AudioSynthWaveform();
-  this->lfo->begin(1, 1, WAVEFORM_SAMPLE_HOLD);
+  this->lfo->begin(1.0, 2.0, WAVEFORM_SINE);
 
   this->filterSignalMixer = new AudioMixer4();
-  this->filterSignalMixer->gain(0, 0.0);
-  this->filterSignalMixer->gain(1, 0.7);
+  this->filterSignalMixer->gain(0, 1.0);
+  this->filterSignalMixer->gain(1, 1);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->filterSignalMixer, 0);
 
   this->filterSignalDc = new AudioSynthWaveformDc();
   this->filterSignalDc->amplitude(1);
   this->filterSignalEnvelope = new AudioEffectEnvelope();
-  this->filterSignalEnvelope->attack(10.0);
-  this->filterSignalEnvelope->decay(500.0);
-  this->filterSignalEnvelope->sustain(0.0);
-  this->filterSignalEnvelope->release(500.0);
-
 
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalDc, 0, *this->filterSignalEnvelope, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filterSignalEnvelope, 0, *this->filterSignalMixer, 1);
@@ -43,11 +38,11 @@ Synth::Synth() {
 
 
   this->amplitudeMixer = new AudioMixer4();
-  this->amplitudeMixer->gain(0, 0.01);
-  this->amplitudeMixer->gain(1, 0.99);
   this->amplitudeDc = new AudioSynthWaveformDc();
   this->amplitudeDc->amplitude(1);
+  this->amplitudeMixer->gain(0, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->lfo, 0, *this->amplitudeMixer, 0);
+  this->amplitudeMixer->gain(1, 1);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeDc, 0, *this->amplitudeMixer, 1);
 
   this->amplitudeModulation = new AudioEffectMultiply();
@@ -90,8 +85,7 @@ void Synth::setup() {
 
   this->setMasterVolume(0.5);
 
-  this->setFilterLFOAmount(0);
-  this->setAmplitudeModulationLFOAmount(0);
+  this->filter->octaveControl(3);
 
   this->codec.surroundSound(7, 1);
   this->codec.surroundSoundEnable();
@@ -234,18 +228,4 @@ void Synth::setFilterFrequency(float freq) {
 
 void Synth::setFilterResonance(float q) {
   this->filter->resonance(q);
-}
-
-
-void Synth::setLFORate(float freq) {
-  this->lfo->frequency(freq);
-}
-
-void Synth::setFilterLFOAmount(float octaves) {
-  this->filter->octaveControl(octaves);
-}
-
-void Synth::setAmplitudeModulationLFOAmount(float amount) {
-  this->amplitudeMixer->gain(0, amount / 2);
-  this->amplitudeMixer->gain(1, 1 - amount / 2);
 }
