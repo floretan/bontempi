@@ -2,6 +2,8 @@
 #include "voice.h"
 #include "frequencies.h"
 
+using namespace std;
+
 AudioOutputI2S  audioOut;
 
 Synth::Synth() {
@@ -65,10 +67,13 @@ Synth::Synth() {
 
   for (int i = 0; i < voiceCount; i++) {
     this->voices[i] = new Voice();
-    this->notes[i] = 0;
-    this->sustainedNotes[i] = 0;
 
     this->patchCords[patchCordIndex++] = new AudioConnection(*this->voices[i]->output, 0, *this->mergeMixers[i / channelsPerMixer], i % channelsPerMixer);
+  }
+
+  // Start with all voices unplayed.
+  for (int i = 0; i < voiceCount; i++) {
+    this->unplayedNotes.push_front(i);
   }
 }
 
@@ -119,44 +124,47 @@ void Synth::setMasterVolume(float vol) {
 void Synth::noteOn(byte midiNote) {
 
   this->filterSignalEnvelope->noteOn();
-  int emptyNoteIndex = -1;
-  int existingNoteIndex = -1;
-  for (int i = 0; i < voiceCount; i++) {
-    if (this->notes[i] == 0) {
-      emptyNoteIndex = i;
-    }
-    if (this->notes[i] == midiNote) {
-      existingNoteIndex = i;
+
+  int voiceIndex = -1;
+
+  // First, check if the note is already playing.
+  for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+    if (this->voices[*it]->currentNote == midiNote) {
+      voiceIndex = *it;
     }
   }
 
-  if (existingNoteIndex != -1)  {
-    this->voices[existingNoteIndex]->noteOn(midiNote);
+  // If it's not playing already, find the next voice to be played.
+  if (voiceIndex == -1) {
+
+    if (!this->unplayedNotes.empty()) {
+      voiceIndex = this->unplayedNotes.back();
+      this->unplayedNotes.pop_back();
+      this->playedNotes.push_back(voiceIndex);
+    }
+    else {
+      voiceIndex = this->playedNotes.front();
+    }
   }
-  else if (emptyNoteIndex != -1) {
-    this->notes[emptyNoteIndex] = midiNote;
-    this->voices[emptyNoteIndex]->noteOn(midiNote);
-  }
+
+  this->voices[voiceIndex]->noteOn(midiNote);
+  this->voices[voiceIndex]->is_pressed = true;
 }
 
 void Synth::noteOff(byte midiNote) {
   this->filterSignalEnvelope->noteOff();
-  for (int i = 0; i < voiceCount; i++) {
-    if (this->notes[i] == midiNote) {
+
+  for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+    int voiceIndex = *it;
+    if (this->voices[voiceIndex]->currentNote == midiNote) {
+
+      // The key is not pressed anymore.
+      this->voices[voiceIndex]->is_pressed = false;
 
       if (!this->sustained) {
-        this->voices[i]->noteOff();
-
-
-        // Setting the amplitude to 0 frees CPU,
-        // but results in a click because it comes too early.
-        // waves[i]->amplitude(0);
-        this->notes[i] = 0;
-        this->sustainedNotes[i] = 0;
-      }
-      else {
-        // Delay the note off yet.
-        this->sustainedNotes[i] = midiNote;
+        this->voices[voiceIndex]->noteOff();
+        this->playedNotes.erase(it);
+        this->unplayedNotes.push_front(voiceIndex);
       }
 
       break;
@@ -168,9 +176,13 @@ void Synth::sustain(boolean pressed) {
   this->sustained = pressed;
 
   if (!pressed) {
-    for (int i = 0; i < voiceCount; i++) {
-      if (this->sustainedNotes[i] != 0 && this->notes[i] != 0) {
-        this->noteOff(this->sustainedNotes[i]);
+    for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+      int voiceIndex = *it;
+      if (this->voices[voiceIndex]->is_playing && !this->voices[voiceIndex]->is_pressed) {
+        this->voices[voiceIndex]->noteOff();
+
+        this->playedNotes.erase(it);
+        this->unplayedNotes.push_front(voiceIndex);
       }
     }
   }

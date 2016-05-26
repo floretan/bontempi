@@ -10,7 +10,6 @@
 #include "AKWF_eorgan.h"
 
 class Voice {
-    byte currentNote;
 
     float detune; // Detune for the second oscillator.
     int transpose;  // Transpose the second oscillator.
@@ -27,6 +26,10 @@ class Voice {
   public:
     Voice();
     ~Voice();
+
+    byte currentNote; // The midi note currently being played.
+    bool is_pressed;
+    bool is_playing;
 
     AudioMixer4 *output;
     AudioEffectEnvelope *env;

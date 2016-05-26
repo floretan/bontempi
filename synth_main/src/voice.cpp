@@ -2,6 +2,10 @@
 #include "frequencies.h"
 
 Voice::Voice() {
+  this->currentNote = 0;
+  this->is_pressed = false;
+  this->is_playing = false;
+
   this->detune = 1;
 
   this->osc1 = new AudioSynthWaveform();
@@ -37,6 +41,7 @@ Voice::~Voice() {
 
 void Voice::noteOn(byte midiNote) {
   this->currentNote = midiNote;
+  this->is_playing = true;
 
   AudioNoInterrupts();
   this->osc1->frequency(tune_frequencies2_PGM[this->currentNote]);
@@ -65,6 +70,8 @@ void Voice::noteOff() {
   this->env->noteOff();
   this->sampler->stop();
   AudioInterrupts();
+
+  this->is_playing = false;
 }
 
 void Voice::setWaveForm1(byte waveform) {

@@ -2,6 +2,8 @@
 #define synth_H
 
 #include <Arduino.h>
+#include <list>
+
 // Audio
 #include <Audio.h>
 #include <Wire.h>
@@ -9,6 +11,8 @@
 #include <SPI.h>
 
 #include "voice.h"
+
+using namespace std;
 
 // Mixers
 const byte mergeMixerCount = 2;
@@ -29,8 +33,9 @@ class Synth {
 
     AudioControlSGTL5000 codec;
 
-    byte notes[voiceCount];
-    byte sustainedNotes[voiceCount];
+    list<byte> playedNotes;
+    list<byte> unplayedNotes;
+
     Voice *voices[voiceCount];
     AudioMixer4 *mergeMixers[voiceCount / 4];
     AudioMixer4 *finalMixer;
