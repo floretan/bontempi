@@ -1,6 +1,11 @@
 #include "voice.h"
 #include "frequencies.h"
 
+#include "AKWF_cello.h"
+#include "AKWF_piano.h"
+#include "AKWF_eorgan.h"
+#include "AKWF_saw.h"
+
 Voice::Voice() {
   this->currentNote = 0;
   this->is_pressed = false;

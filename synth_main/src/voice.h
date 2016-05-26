@@ -5,10 +5,6 @@
 #include <Audio.h>
 #include <Wire.h>
 
-#include "AKWF_cello.h"
-#include "AKWF_piano.h"
-#include "AKWF_eorgan.h"
-
 class Voice {
 
     float detune; // Detune for the second oscillator.
