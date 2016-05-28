@@ -30,7 +30,7 @@ class Voice {
     AudioMixer4 *output;
     AudioEffectEnvelope *env;
 
-    void noteOn(byte midiNote);
+    void noteOn(byte midiNote = 0);
     void noteOff();
 
     void setWaveForm1(byte waveform);

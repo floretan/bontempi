@@ -45,7 +45,9 @@ Voice::~Voice() {
 }
 
 void Voice::noteOn(byte midiNote) {
-  this->currentNote = midiNote;
+  if (midiNote > 0) {
+    this->currentNote = midiNote;
+  }
   this->is_playing = true;
 
   AudioNoInterrupts();
