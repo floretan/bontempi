@@ -6,6 +6,10 @@ using namespace std;
 
 AudioOutputI2S  audioOut;
 
+bool compare_note_entry (const NoteEntry& first, const NoteEntry& second) {
+  return ( first.note < second.note );
+}
+
 Synth::Synth() {
 
   this->waveform1 = 0;
@@ -71,10 +75,18 @@ Synth::Synth() {
     this->patchCords[patchCordIndex++] = new AudioConnection(*this->voices[i]->output, 0, *this->mergeMixers[i / channelsPerMixer], i % channelsPerMixer);
   }
 
+  // Initialize the mode.
+  this->mode = 0;
+
   // Start with all voices unplayed.
   for (int i = 0; i < voiceCount; i++) {
-    this->unplayedNotes.push_front(i);
+    struct NoteEntry n;
+    n.voiceIndex = i;
+    n.note = 0;
+    this->unplayedNotes.push_front(n);
   }
+
+  this->arpeggiatorPosition = 0;
 }
 
 Synth::~Synth() {
@@ -123,39 +135,61 @@ void Synth::setMasterVolume(float vol) {
 
 void Synth::noteOn(byte midiNote) {
 
-  this->filterSignalEnvelope->noteOn();
+  if (this->mode == MODE_MONOPHONIC) {
+    if (this->playedNotes.empty()) {
+
+      // TODO: noteOff on previous note.
+      this->filterSignalEnvelope->noteOn();
+    }
+  }
 
   int voiceIndex = -1;
 
-  // First, check if the note is already playing.
-  for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
-    if (this->voices[*it]->currentNote == midiNote) {
-      voiceIndex = *it;
+  if (this->mode == MODE_MONOPHONIC) {
+    voiceIndex = 0;
+  } else {
+    // First, check if the note is already playing.
+    for (list<NoteEntry>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+      if (this->voices[(*it).voiceIndex]->currentNote == midiNote) {
+        voiceIndex = (*it).voiceIndex;
+      }
+    }
+
+    // If it's not playing already, find the next voice to be played.
+    if (voiceIndex == -1) {
+
+      if (!this->unplayedNotes.empty()) {
+        struct NoteEntry n = this->unplayedNotes.back();
+        voiceIndex = n.voiceIndex;
+        this->unplayedNotes.pop_back();
+        n.note = midiNote;
+        this->playedNotes.push_back(n);
+      }
+      else {
+        // If no voice is unplayed, replace the oldest note.
+        struct NoteEntry n = this->playedNotes.front();
+        n.note = midiNote;
+        voiceIndex = n.voiceIndex;
+      }
     }
   }
 
-  // If it's not playing already, find the next voice to be played.
-  if (voiceIndex == -1) {
+  // if (this->mode == MODE_MONOPHONIC || this->mode == MODE_POLYPHONIC) {
+    this->voices[voiceIndex]->noteOn(midiNote);
+  // }
+  // else {
+    // TODO: Set the right note for the voice.
+  // }
 
-    if (!this->unplayedNotes.empty()) {
-      voiceIndex = this->unplayedNotes.back();
-      this->unplayedNotes.pop_back();
-      this->playedNotes.push_back(voiceIndex);
-    }
-    else {
-      voiceIndex = this->playedNotes.front();
-    }
-  }
-
-  this->voices[voiceIndex]->noteOn(midiNote);
   this->voices[voiceIndex]->is_pressed = true;
+  this->playedNotes.sort(compare_note_entry);
 }
 
 void Synth::noteOff(byte midiNote) {
-  this->filterSignalEnvelope->noteOff();
 
-  for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
-    int voiceIndex = *it;
+  for (list<NoteEntry>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+    struct NoteEntry n = *it;
+    int voiceIndex = n.voiceIndex;
     if (this->voices[voiceIndex]->currentNote == midiNote) {
 
       // The key is not pressed anymore.
@@ -164,10 +198,16 @@ void Synth::noteOff(byte midiNote) {
       if (!this->sustained) {
         this->voices[voiceIndex]->noteOff();
         this->playedNotes.erase(it);
-        this->unplayedNotes.push_front(voiceIndex);
+        this->unplayedNotes.push_front(n);
       }
 
       break;
+    }
+  }
+
+  if (this->mode == MODE_MONOPHONIC) {
+    if (this->playedNotes.empty()) {
+      this->filterSignalEnvelope->noteOff();
     }
   }
 }
@@ -176,14 +216,47 @@ void Synth::sustain(boolean pressed) {
   this->sustained = pressed;
 
   if (!pressed) {
-    for (list<byte>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
-      int voiceIndex = *it;
+    for (list<NoteEntry>::iterator it=this->playedNotes.begin(); it != this->playedNotes.end(); it++) {
+      struct NoteEntry n = *it;
+      int voiceIndex = n.voiceIndex;
       if (this->voices[voiceIndex]->is_playing && !this->voices[voiceIndex]->is_pressed) {
         this->voices[voiceIndex]->noteOff();
 
         this->playedNotes.erase(it);
-        this->unplayedNotes.push_front(voiceIndex);
+        this->unplayedNotes.push_front(n);
       }
+    }
+  }
+}
+
+void Synth::tick() {
+  if (this->mode == MODE_MONOPHONIC || this->mode == MODE_POLYPHONIC) {
+    // Don't do anything.
+    return;
+  }
+
+  if (this->mode == MODE_ARPEGGIATOR) {
+    if (!this->playedNotes.empty()) {
+      this->arpeggiatorPosition = (this->arpeggiatorPosition + 1) % this->playedNotes.size();
+
+      int i = 0;
+      list<NoteEntry>::iterator it=this->playedNotes.begin();
+      while (i < this->arpeggiatorPosition && it != this->playedNotes.end()) {
+        i++;
+        it++;
+      }
+
+      this->voices[(*it).voiceIndex]->noteOff();
+
+      // Go to the next played voice.
+      it++;
+
+      // If we reached the end, go back to the start.
+      if (it == this->playedNotes.end()) {
+        it = this->playedNotes.begin();
+      }
+
+      this->voices[(*it).voiceIndex]->noteOn();
     }
   }
 }

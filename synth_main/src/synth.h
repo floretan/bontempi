@@ -12,12 +12,24 @@
 
 #include "voice.h"
 
+// Use the std namespace so we have access to lists.
 using namespace std;
 
 // Mixers
 const byte mergeMixerCount = 2;
 const byte channelsPerMixer = 4;
 const byte voiceCount = channelsPerMixer * mergeMixerCount;
+
+// Modes
+const byte MODE_MONOPHONIC = 0;
+const byte MODE_POLYPHONIC = 1;
+const byte MODE_CHORDS = 2;
+const byte MODE_ARPEGGIATOR = 3;
+
+struct NoteEntry {
+  byte note;
+  byte voiceIndex;
+};
 
 class Synth {
     float masterVolume;
@@ -33,8 +45,12 @@ class Synth {
 
     AudioControlSGTL5000 codec;
 
-    list<byte> playedNotes;
-    list<byte> unplayedNotes;
+    byte mode;
+    list<NoteEntry> playedNotes;
+    list<NoteEntry> unplayedNotes;
+
+    list<NoteEntry> ::iterator currentNote;
+    byte arpeggiatorPosition;
 
     Voice *voices[voiceCount];
     AudioMixer4 *mergeMixers[voiceCount / 4];
@@ -59,6 +75,30 @@ class Synth {
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
     void sustain(boolean pressed);
+
+    void tick();
+    void setMode(byte mode) {
+      if (this->mode != mode) {
+        this->mode = mode;
+        switch (mode) {
+          case MODE_MONOPHONIC:
+            Serial.println("Mode: Monophonic");
+            break;
+
+          case MODE_POLYPHONIC:
+            Serial.println("Mode: Polyphonic");
+            break;
+
+          case MODE_CHORDS:
+            Serial.println("Mode: Chords");
+            break;
+
+          case MODE_ARPEGGIATOR:
+            Serial.println("Mode: Arpeggiator");
+            break;
+        }
+      }
+    }
 
     void setWaveForm1(byte waveform);
     void setWaveForm2(byte waveform);

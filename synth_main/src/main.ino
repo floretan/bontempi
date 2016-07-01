@@ -37,6 +37,13 @@ byte frameCount = 0;
 // How often to read inputs.
 byte frameStep = 8;
 
+
+unsigned long tickInterval = 1000;
+float tickSignature = 0.25;
+unsigned long lastTick = 0;
+unsigned long lastTap = 0;
+bool tapPressed = false;
+
 void loop() {
 
   // Change this to if(1) for measurement output every 2 seconds
@@ -58,6 +65,11 @@ void loop() {
   usbMIDI.read();
 
   readInputs();
+
+  if (millis() - lastTick >= tickInterval * tickSignature) {
+    synth.tick();
+    lastTick = millis();
+  }
 
   frameCount++;
 }
@@ -215,7 +227,39 @@ void readInputs() {
 
   if (frameCount % frameStep == 0) {
     // Mode depth
-    int value = analogRead(multiplexInputPin1);
+    int value = readSelectorPin(multiplexInputPin1);
+
+    switch (value) {
+      case 0:
+      case 1:
+        tickSignature = 1.0;
+        break;
+
+      case 2:
+      case 3:
+        tickSignature = 1.0/2;
+        break;
+
+      case 4:
+      case 5:
+        tickSignature = 1.0/4;
+        break;
+
+      case 6:
+      case 7:
+        tickSignature = 1.0/8;
+        break;
+
+      case 8:
+      case 9:
+        tickSignature = 1.0/16;
+        break;
+
+      case 10:
+      case 11:
+        tickSignature = 1.0/32;
+        break;
+    }
 
     // Amplitude envelope attack
     value = analogRead(multiplexInputPin2);
@@ -320,18 +364,33 @@ void readInputs() {
 
   readInputKeyRow(81);
 
+// int value = analogRead(multiplexInputPin1);
+//   if (value > 30 && value < 500) {
+//     Serial.println(value);
+//   }
+
+  // Tap tempo
+  if (analogRead(multiplexInputPin1) > 500) {
+    // Only count when the tap button is first pressed
+    if (!tapPressed) {
+      Serial.println("TAP");
+      tickInterval = millis() - lastTap;
+      lastTap = millis();
+
+      tapPressed = true;
+    }
+  }
+  else {
+    tapPressed = false;
+  }
+
   if (frameCount % frameStep == 4) {
 
-    // Tap tempo
-    int value = analogRead(multiplexInputPin1);
-
     // Amplitude envelope release
-    value = analogRead(multiplexInputPin2);
-    synth.setAmpEnvRelease(fscale(1, 1023, 1, 2000, value, -5));
+    synth.setAmpEnvRelease(fscale(1, 1023, 1, 2000, analogRead(multiplexInputPin2), -5));
 
     // LFO target
-    value = readSelectorPin(multiplexInputPin3);
-    synth.setLFOTarget(value);
+    synth.setLFOTarget(readSelectorPin(multiplexInputPin3));
   }
 
 
@@ -373,6 +432,7 @@ void readInputs() {
   if (frameCount % frameStep == 6) {
     // Mode selector
     int value = readSelectorPin(multiplexInputPin1);
+    synth.setMode(value);
 
     // Filter envelope release
     value = analogRead(multiplexInputPin2);
