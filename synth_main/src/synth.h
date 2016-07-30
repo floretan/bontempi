@@ -43,7 +43,7 @@ class Synth {
 
     boolean sustained;
 
-    AudioControlSGTL5000 codec;
+
 
     byte mode;
     list<NoteEntry> playedNotes;
@@ -67,10 +67,11 @@ class Synth {
     AudioConnection* patchCords[voiceCount + mergeMixerCount + 20];
 
   public:
+    AudioMixer4 outputMixer;
+
     Synth();
     ~Synth();
     void setup();
-    void setMasterVolume(float vol);
 
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);

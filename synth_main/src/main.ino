@@ -7,19 +7,33 @@
 #include <SerialFlash.h>
 
 #include "synth.h"
+#include "sampler.h"
+#include "main_mixer.h"
 #include "fscale.h"
 
 #include "Arduino.h"
 
 // Our main synth object.
 Synth synth;
+Sampler sampler;
+MainMixer mainMixer;
+
+AudioConnection patchCord1(synth.outputMixer, 0, mainMixer.inputMixer, 0);
+AudioConnection patchCord2(sampler.outputMixer, 0, mainMixer.inputMixer, 1);
+
 
 void setup() {
   Serial.begin(115200);
   // wait for Arduino Serial Monitor
   delay(1000);
 
+  // Audio setup.
+  AudioMemory(20);
+
   synth.setup();
+  mainMixer.enable();
+  sampler.enable();
+
 
   setupInputs();
 
@@ -168,6 +182,9 @@ void readInputKey(byte baseNote, byte keyOffset) {
 
       usbMIDI.sendNoteOn(note, velocity, channel);
       synth.noteOn(note);
+
+      // TODO: this doesn't belong here.
+      sampler.noteOn(note);
       keyState[note] = true;
     }
   }
@@ -175,6 +192,7 @@ void readInputKey(byte baseNote, byte keyOffset) {
     if (keyState[note]) {
       usbMIDI.sendNoteOff(note, velocity, channel);
       synth.noteOff(note);
+      sampler.noteOff(note);
       keyState[note] = false;
     }
   }
@@ -300,7 +318,7 @@ void readInputs() {
     synth.setLFOWaveform(value);
 
     // Sampler selector
-    value = readSelectorPin(multiplexInputPin4);
+    sampler.setSound(readSelectorPin(multiplexInputPin4));
   }
 
 
@@ -331,7 +349,7 @@ void readInputs() {
     if (value != p7) {
      p7 = value;
 
-     synth.setMasterVolume((float)p7 / 1023 * 0.8);
+     mainMixer.setMasterVolume((float)p7 / 1023 * 0.8);
     }
   }
 
@@ -354,6 +372,9 @@ void readInputs() {
     // LFO amplitude
     value = analogRead(multiplexInputPin3);
     synth.setLFOAmplitude(fscale(1, 1023, 0.0, 1.0, value, 0));
+
+    // Sub volume
+    value = analogRead(multiplexInputPin4);
   }
 
   /**
@@ -391,6 +412,9 @@ void readInputs() {
 
     // LFO target
     synth.setLFOTarget(readSelectorPin(multiplexInputPin3));
+
+    // Sampler volume
+    mainMixer.inputMixer.gain(1, fscale(1, 1023, 0.0, 1.0, analogRead(multiplexInputPin4), 0));
   }
 
 
@@ -468,5 +492,6 @@ void readInputs() {
 
     // Mixer: Synth volume
     value = analogRead(multiplexInputPin4);
+    mainMixer.inputMixer.gain(0, fscale(1, 1023, 0.0, 1.0, value, 0));
   }
 }

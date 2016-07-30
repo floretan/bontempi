@@ -4,8 +4,6 @@
 
 using namespace std;
 
-AudioOutputI2S  audioOut;
-
 bool compare_note_entry (const NoteEntry& first, const NoteEntry& second) {
   return ( first.note < second.note );
 }
@@ -55,8 +53,7 @@ Synth::Synth() {
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->filter, 0, *this->amplitudeModulation, 0);
   this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeMixer, 0, *this->amplitudeModulation, 1);
 
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 0);
-  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, audioOut, 1);
+  this->patchCords[patchCordIndex++] = new AudioConnection(*this->amplitudeModulation, 0, this->outputMixer, 0);
 
   for (int i = 0; i < mergeMixerCount; i++) {
     this->mergeMixers[i] = new AudioMixer4();
@@ -95,42 +92,7 @@ Synth::~Synth() {
 
 void Synth::setup() {
 
-  // Audio setup.
-  AudioMemory(20);
-
-  this->codec.enable();
-
-  this->setMasterVolume(0.5);
-
   this->filter->octaveControl(3);
-
-  this->codec.surroundSound(7, 1);
-  this->codec.surroundSoundEnable();
-
-  // Initialize the SD card
-  SPI.setMOSI(7);
-  SPI.setSCK(14);
-  if (!(SD.begin(10))) {
-    // stop here if no SD card, but print a message
-    while (1) {
-      Serial.println("Unable to access the SD card");
-      delay(500);
-    }
-  }
-
-  // Initialize the serial flash chip.
-  if (!SerialFlash.begin()) {
-    Serial.println("Unable to access SPI Flash chip");
-  }
-}
-
-void Synth::setMasterVolume(float vol) {
-  // Protect my ears.
-  if (vol > 0.8) {
-    vol = 0.8;
-  }
-  this->masterVolume = vol;
-  this->codec.volume(this->masterVolume);
 }
 
 void Synth::noteOn(byte midiNote) {
