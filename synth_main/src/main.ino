@@ -375,6 +375,7 @@ void readInputs() {
 
     // Sub volume
     value = analogRead(multiplexInputPin4);
+    mainMixer.setReverbVolume(fscale(1, 1023, 0.0, 1.0, value, 0));
   }
 
   /**
@@ -467,6 +468,7 @@ void readInputs() {
 
     // Sampler velocity
     value = analogRead(multiplexInputPin4);
+    mainMixer.setReverbTime(fscale(1, 1023, 0, 10, value, -3));
   }
 
   /**
