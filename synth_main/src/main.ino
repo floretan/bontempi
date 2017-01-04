@@ -167,8 +167,8 @@ void readAdditionalInputs() {
  * Read a 12-position selector.
  */
 byte readSelectorPin(byte pin) {
-  int interval = (1023 - 1) / 11; // There are twelve positions, with 11 intervals.
-  return (analogRead(pin)+interval/2)/interval;
+  int interval = (1023 - 1) / 12; // There are twelve positions, with 11 intervals and one extra position to prevent short circuits.
+  return (analogRead(pin)+interval/2)/interval - 1; // Substract the additional position.
 }
 
 void readInputKey(byte baseNote, byte keyOffset) {
